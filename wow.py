@@ -79,7 +79,6 @@ def merge_owed_with_totals(directory, statement_owner, totals_csv, owed_from_cur
         totals_csv_object = csv.DictReader(read_totals)
         current_totals = list(totals_csv_object)
         people_currently_owed = [person["person_owed"] for person in current_totals if person["person_owed"] != statement_owner]
-        print("PEOPLE CURRENTLY OWED", people_currently_owed)
         if current_totals:
             for person_owed in current_totals:
                 if person_owed["person_owed"] == statement_owner:

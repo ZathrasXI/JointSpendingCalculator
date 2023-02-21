@@ -119,7 +119,6 @@ class TestGetInformation(unittest.TestCase):
 
     def test_update_total_that_a_person_owes(self):
         self.clear_totals_spreadsheet()
-
         with patch("builtins.input", return_value="Jan"):
             triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
         with patch("builtins.input", return_value="Jan Sophie"):
@@ -142,7 +141,8 @@ class TestGetInformation(unittest.TestCase):
                     count_how_many_sophies += 1
             assert count_how_many_sophies == 1
 
-    def test_can_process_statements_from_2_different_people(self):
+
+    def test_can_write_totals_for_statements_from_2_different_people(self):
         self.clear_totals_spreadsheet()
 
         with patch("builtins.input", return_value="Jan"):
@@ -178,7 +178,7 @@ class TestGetInformation(unittest.TestCase):
         assert sophie_is_owed == owed_from_statement
 
 
-    def test_merge_owed_with_totals(self):
+    def test_can_merge_total_owed_from_statement_with_empty_total_spreadsheet(self):
         with patch("builtins.input", return_value="Jan"):
             owed_from_statement = read_statement(self.STATEMENTS[0], self.NAMES[1], self.DIRECTORY)
         
@@ -187,7 +187,7 @@ class TestGetInformation(unittest.TestCase):
             "person_owed":"Sophie",
             "Jan": 90.0
         }
-        pass
+        assert updated_totals[0] == sophies_new_total_owed
 
 
     def test_write_new_total(self):
@@ -212,6 +212,6 @@ class TestGetInformation(unittest.TestCase):
 
 
 
-    # @classmethod
-    # def tearDownClass(self) -> None:
-    #     os.remove(self.DIRECTORY + self.TOTALS_SPREADSHEET)
+    @classmethod
+    def tearDownClass(self) -> None:
+        os.remove(self.DIRECTORY + self.TOTALS_SPREADSHEET)
