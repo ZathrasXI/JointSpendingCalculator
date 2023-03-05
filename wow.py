@@ -45,16 +45,14 @@ def whose_statement(statement, people):
 
 def triage_transactions(statement, directory, statement_owner, names, totals_spreadsheet):
     owed_from_statement = read_statement(statement, statement_owner, directory)
-    new_total_owed = merge_owed_with_totals(directory, statement_owner, totals_spreadsheet, owed_from_statement)
-    print("NEW TOTAL", new_total_owed)
-    write_to_spreadsheet_of_totals(directory, names, totals_spreadsheet, new_total_owed)
+    new_total_owed = merge_owed_from_statement_with_totals(directory, statement_owner, totals_spreadsheet, owed_from_statement)
 
 
 def read_statement(statement, statement_owner, directory):
     with open(directory + statement, "r") as persons_statement:
         statement_reader = csv.DictReader(persons_statement)
         print(f"For each transaction in {statement} enter the name of everyone who should pay for this item. Remember to include yourself...") # ..."by typing me." ?
-        owed_from_current_statement = {"person_owed": statement_owner}
+        owes_from_statement = {"person_owed": statement_owner}
         for transaction in statement_reader:
             try:
                 cost = float(transaction[" Money Out"])
@@ -62,48 +60,52 @@ def read_statement(statement, statement_owner, directory):
                 continue
             print('__'*50)
             print(transaction)
-            input_people_who_owe = input("Including yourself, list the people who should pay for this transaction: ")
-            unformatted_list_of_people = input_people_who_owe.split(" ")
-            people_who_owe = [person for person in unformatted_list_of_people if person != ""]
+            ask_for_names_of_people = input("Including yourself, list the people who should pay for this transaction: ")
+            list_of_names_needs_empty_spaces_removed = ask_for_names_of_people.split(" ")
+            people_who_owe = [person for person in list_of_names_needs_empty_spaces_removed if person != ""]
             how_much_each_person_owes = cost / len(people_who_owe)
             for person in people_who_owe:
+                if person not in owes_from_statement: owes_from_statement[person] = 0.0
                 if person.lower() != statement_owner.lower():
-                    if person not in owed_from_current_statement.keys():
-                        owed_from_current_statement[person] = 0
-                    owed_from_current_statement[person] += how_much_each_person_owes
-    return owed_from_current_statement
+                    owes_from_statement[person] += how_much_each_person_owes
+    return owes_from_statement
 
 
-def merge_owed_with_totals(directory, statement_owner, totals_csv, owed_from_current_statement):
-    with open(directory + totals_csv, "r") as read_totals:
+def merge_owed_from_statement_with_totals(directory, statement_owner, name_of_totals_spreadsheet, owed_from_current_statement):
+    with open(directory + name_of_totals_spreadsheet, "r") as read_totals:
         totals_csv_object = csv.DictReader(read_totals)
-        current_totals = list(totals_csv_object)
-        people_currently_owed = [person["person_owed"] for person in current_totals if person["person_owed"] != statement_owner]
-        if current_totals:
-            for person_owed in current_totals:
-                if person_owed["person_owed"] == statement_owner:
-                    for debtor in owed_from_current_statement.keys():
-                        if debtor in person_owed.keys() and debtor != "person_owed":
-                            debtor_currently_owes_total_sheet = float(person_owed[debtor])
-                            person_owed[debtor] = debtor_currently_owes_total_sheet + owed_from_current_statement[debtor]
-                elif statement_owner not in people_currently_owed:
-                    current_totals.append(owed_from_current_statement)
-        elif owed_from_current_statement:
-            current_totals.append(owed_from_current_statement)
-    print("CURRENT TOTALS", current_totals)
-    return current_totals
+        totals_spreadsheet_values_are_strings = list(totals_csv_object)
+        print("AS STRINGS", totals_spreadsheet_values_are_strings)
+        totals_spreadsheet = convert_all_values_to_floats(statement_owner, totals_spreadsheet_values_are_strings)
+        print("AS FLOATS", totals_spreadsheet)
+        statement = owed_from_current_statement
+        people_who_owe_statement_owner_from_this_statement = list(statement.keys())
+        people_who_owe_statement_owner_from_this_statement.remove("person_owed")
+        people_owed_in_totals_spreadsheet = [person["person_owed"] for person in totals_spreadsheet if person["person_owed"] != statement_owner]
+        # If statement owner already has a row in totals spreadsheet
+        for row in totals_spreadsheet:
+            if row["person_owed"] == statement_owner:
+                    for person in people_who_owe_statement_owner_from_this_statement:
+                        try:
+                            row[person] = float(row[person]) + statement[person]
+                        except KeyError:
+                            row.update({
+                                person: row[person]
+                            })
+        # If statement owner doesn't have a row in totals spreadsheet
+        if statement_owner not in people_owed_in_totals_spreadsheet:
+            totals_spreadsheet.append(statement)
+    return totals_spreadsheet
 
-
-def write_to_spreadsheet_of_totals(directory, names, totals_spreadsheet, totals):
-    totals_header = ["person_owed"] + names
-    with open(directory + totals_spreadsheet, "w") as ut:
-        write_totals = csv.DictWriter(ut, fieldnames=totals_header)
-        write_totals.writeheader()
-        for person in totals:
-            write_totals.writerow(person)
-
-
-
+def convert_all_values_to_floats(statement_owner, totals_spreadsheet):
+    for row in totals_spreadsheet:
+        for person in row:
+            if person != "person_owed":
+                try:
+                    row[person] = float(row[person])
+                except ValueError:
+                    row[person] = 0.0
+    return totals_spreadsheet
 
 
 def main():

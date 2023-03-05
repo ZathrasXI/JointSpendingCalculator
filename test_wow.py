@@ -4,8 +4,7 @@ from wow import *
 import os
 import csv
 
-
-class TestGetInformation(unittest.TestCase):
+class TestData():
     FOLDER_NAME = 'test_data'
     with patch('builtins.input', return_value=FOLDER_NAME):
         DIRECTORY = find_folder()
@@ -20,6 +19,14 @@ class TestGetInformation(unittest.TestCase):
     STATEMENTS = get_statements(DIRECTORY, TOTALS_SPREADSHEET)
     HEADER = ["person_owed"] + NAMES
 
+    #TODO this needs to work when inherited by other classes
+    @classmethod
+    def cleanUp(self):
+        os.remove(self.DIRECTORY + self.TOTALS_SPREADSHEET)
+
+
+class TestGetDetails(unittest.TestCase, TestData):
+    
     def clear_totals_spreadsheet(self):
         with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "w") as t:
             clear_spreadsheet = csv.DictWriter(t, self.HEADER)
@@ -69,149 +76,102 @@ class TestGetInformation(unittest.TestCase):
 
         assert person == "Sophie"
         assert person != "Michael"
-
-
-    def test_can_skip_transaction(self):
-        # with open(self.DIRECTORY+self.STATEMENTS[0]) as sophies_statement:
-        #     totals_csv = csv.DictReader(sophies_statement)
-        #     number_of_transactions = len(list(totals_csv)) - 1
-
-        # with patch("builtins.input", return_value="skip"):
-        #     _, _ = triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
-
-        # with open(self.DIRECTORY+self.STATEMENTS[0]) as totals:
-        #     reader = csv.DictReader(totals)
-        #     number_of_rows_in_totals = len(list(reader)) - 1
-        # assert number_of_rows_in_totals == 0
-        pass
-
-    def test_one_person_paid_for_all_transactions(self):
-        self.clear_totals_spreadsheet()
-        with patch("builtins.input", return_value="Jan"):
-            triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, 'r') as totals:
-            totals_dict = csv.DictReader(totals)
-            totals_list = list(totals_dict)
-            sophie_is_owed = {
-                "person_owed":"Sophie",
-                "Jan":"90.0",
-                "Sophie":""
+    
+    # def tearDown(self) -> None:
+    #     return super().cleanUp()
+    
+class TestReadStatement(unittest.TestCase, TestData):
+    #TODO test for skipping a transaction in a statement
+    def test_one_person_pays_for_all_transactions(self):
+        case = {   
+                "statement_owner": self.NAMES[1],
+                "return_value": "Jan",
+                "expected": {
+                    "person_owed":"Sophie",
+                    "Jan":90.0
+                }
             }
-            assert len(totals_list) > 0
-            assert sophie_is_owed in totals_list
-       
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
+        assert case['expected'] == owed_from_statement
 
-    def test_both_people_split_everything(self):
-        self.clear_totals_spreadsheet()
-        with patch("builtins.input", return_value="Jan Sophie"):
-            triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[0], self.NAMES, self.TOTALS_SPREADSHEET)
-        jan_is_owed = {
-            "person_owed":"Jan",
-            "Jan":"",
-            "Sophie":"45.0"
-        }
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, 'r') as totals:
-            totals_dict = csv.DictReader(totals)
-            totals_list = list(totals_dict)
-   
-            assert len(totals_list) > 0
-            assert jan_is_owed in totals_list
-
-    def test_update_total_that_a_person_owes(self):
-        self.clear_totals_spreadsheet()
-        with patch("builtins.input", return_value="Jan"):
-            triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
-        with patch("builtins.input", return_value="Jan Sophie"):
-            triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
+    def test_2_people_go_halves_on_all_transactions(self):
+        case = {
+                "statement_owner": self.NAMES[1],
+                "return_value": "Jan James",
+                "expected": {
+                    "person_owed": "Sophie",
+                    "Jan": 45.0,
+                    "James": 45.0
+                }
+            }
         
-        sophies_total_owed_after_statement_triaged_twice = {
-            "person_owed":"Sophie",
-            "Sophie":"",
-            "Jan":"135.0"
-        }
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "r") as t:
-            totals_sheet = csv.DictReader(t, self.HEADER)
-            list_of_rows_totals_sheet = list(totals_sheet)
-            assert len(list_of_rows_totals_sheet) > 0
-            assert sophies_total_owed_after_statement_triaged_twice in list_of_rows_totals_sheet
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
+        assert case['expected'] == owed_from_statement
 
-            count_how_many_sophies = 0
-            for row in list_of_rows_totals_sheet:
-                if row["person_owed"] == "Sophie":
-                    count_how_many_sophies += 1
-            assert count_how_many_sophies == 1
+    def test_3_people_split_cost(self):
+        case = {   
+                "statement_owner": self.NAMES[0],
+                "return_value": "Sophie Jane Sven",
+                "expected": {
+                    "person_owed": "Jan",
+                    "Sophie": 30.0,
+                    "Jane": 30.0,
+                    "Sven": 30.0
+                }
+            }
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
+        assert case['expected'] == owed_from_statement
 
-
-    def test_can_write_totals_for_statements_from_2_different_people(self):
-        self.clear_totals_spreadsheet()
-
-        with patch("builtins.input", return_value="Jan"):
-            triage_transactions(self.STATEMENTS[0], self.DIRECTORY, self.NAMES[1], self.NAMES, self.TOTALS_SPREADSHEET)
-
-        with patch("builtins.input", return_value="Sophie"):
-            triage_transactions(self.STATEMENTS[1], self.DIRECTORY, self.NAMES[0], self.NAMES, self.TOTALS_SPREADSHEET)
-
-        jan_is_owed = {
-            "person_owed":"Jan",
-            "Sophie":"410.0",
-            "Jan":""
-        }
-        sophie_is_owed = {
-            "person_owed":"Sophie",
-            "Sophie":"",
-            "Jan":"90.0"
-        }
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "r") as totals:
-            totals_reader = csv.DictReader(totals, self.HEADER)
-            list_of_totals = list(totals_reader)
-            assert len(list_of_totals) == 3
-            assert list_of_totals == [jan_is_owed, sophie_is_owed]
+    # def tearDown(self) -> None:
+    #     return super().cleanUp()
 
 
-    def test_read_statement(self):
-        with patch("builtins.input", return_value="Jan"):
-            owed_from_statement = read_statement(self.STATEMENTS[0], self.NAMES[1], self.DIRECTORY)
-        sophie_is_owed = {
-            "person_owed":"Sophie",
-            "Jan": 90.0
-        }
-        assert sophie_is_owed == owed_from_statement
+class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestData):
 
+    def test_can_merge_empty_totals_with_totals_from_statement(self):
+        case = {
+                "statement_owner": self.NAMES[1],
+                "return_value": "Jan",
+                "statement":self.STATEMENTS[0],
+                "totals_spreadsheet": self.TOTALS_SPREADSHEET,
+                "expected": {
+                    "person_owed": "Sophie",
+                    "Jan": 90.0,
+                }
+            }
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(case['statement'], case['statement_owner'], self.DIRECTORY)
+        updated_totals = merge_owed_from_statement_with_totals(self.DIRECTORY, case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)
+        assert case['expected'] == updated_totals[0]
 
-    def test_can_merge_total_owed_from_statement_with_empty_total_spreadsheet(self):
-        with patch("builtins.input", return_value="Jan"):
-            owed_from_statement = read_statement(self.STATEMENTS[0], self.NAMES[1], self.DIRECTORY)
-        
-        updated_totals = merge_owed_with_totals(self.DIRECTORY, self.NAMES[1], self.TOTALS_SPREADSHEET, owed_from_statement)
-        sophies_new_total_owed = {
-            "person_owed":"Sophie",
-            "Jan": 90.0
-        }
-        assert updated_totals[0] == sophies_new_total_owed
+    def test_can_update_prepopulated_totals_statement_one_person_paid_for_everything(self):
+        case = {
+                "statement_owner": self.NAMES[1],
+                "return_value": "Jan",
+                "statement": self.STATEMENTS[0],
+                "totals_spreadsheet": "../prefilled_totals.csv",
+                "expected": [
+                    {
+                        "person_owed": "Sophie",
+                        "Jan": 190.0,
+                        "Sophie": 0.0
+                    },
+                    {
+                        "person_owed": "Jan",
+                        "Jan": 0.0,
+                        "Sophie":10.0
+                    }
+                ]
+            }
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(case['statement'], case['statement_owner'], self.DIRECTORY)
+    
+        updated_totals = merge_owed_from_statement_with_totals(self.DIRECTORY, case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)
+        assert case['expected'][0] in updated_totals
+        assert case['expected'][1] in updated_totals
 
-
-    def test_write_new_total(self):
-        owed_from_statement = []
-        with patch("builtins.input", return_value="Jan"):
-            owed_from_statement.append(read_statement(self.STATEMENTS[0], self.NAMES[1], self.DIRECTORY))
-
-        write_to_spreadsheet_of_totals(self.DIRECTORY, self.NAMES, self.TOTALS_SPREADSHEET, owed_from_statement)
-
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "r") as t:
-            header = ["person_owed"] + self.NAMES
-            totals_spreadsheet = list(csv.DictReader(t, header))
-
-        sophie_is_owed = {
-            "person_owed":"Sophie",
-            "Jan": "90.0",
-            "Sophie": ""
-        }
-        assert len(totals_spreadsheet)
-        assert sophie_is_owed in totals_spreadsheet
-
-
-
-
-    @classmethod
-    def tearDownClass(self) -> None:
-        os.remove(self.DIRECTORY + self.TOTALS_SPREADSHEET)
+    # def tearDown(self) -> None:
+    #     return super().cleanUp()
