@@ -37,7 +37,6 @@ class TestGetDetails(unittest.TestCase, TestData):
             assert 'Sophie' in self.NAMES
             assert ' ' not in self.NAMES
 
-
     def test_which_folder_are_the_statements_in(self):
         assert os.path.isdir(self.DIRECTORY) is True
         assert self.DIRECTORY[-1] == '/'
@@ -68,12 +67,10 @@ class TestGetDetails(unittest.TestCase, TestData):
             file_header = reader.fieldnames
             assert header == file_header
 
-        self.clear_totals_spreadsheet()
 
     def test_whose_statement_is_this(self):
         with patch("builtins.input", return_value="Sophie"):
             person = whose_statement(self.STATEMENTS[0], self.NAMES)
-
         assert person == "Sophie"
         assert person != "Michael"
     
