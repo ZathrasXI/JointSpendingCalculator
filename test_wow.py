@@ -19,19 +19,18 @@ class TestData():
     STATEMENTS = get_statements(DIRECTORY, TOTALS_SPREADSHEET)
     HEADER = ["person_owed"] + NAMES
 
-    #TODO this needs to work when inherited by other classes
-    @classmethod
-    def cleanUp(self):
+    def create_empty_totals_spreadsheet(self):
+        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "w") as t:
+            clear_spreadsheet = csv.DictWriter(t, self.HEADER)
+            clear_spreadsheet.writeheader()
+
+
+    def remove_totals_spreadsheet(self):
         os.remove(self.DIRECTORY + self.TOTALS_SPREADSHEET)
 
 
 class TestGetDetails(unittest.TestCase, TestData):
     
-    def clear_totals_spreadsheet(self):
-        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "w") as t:
-            clear_spreadsheet = csv.DictWriter(t, self.HEADER)
-            clear_spreadsheet.writeheader()
-
     def test_get_names(self):
             assert 'Jan' in self.NAMES
             assert 'Sophie' in self.NAMES
@@ -67,6 +66,8 @@ class TestGetDetails(unittest.TestCase, TestData):
             file_header = reader.fieldnames
             assert header == file_header
 
+        self.remove_totals_spreadsheet()
+
 
     def test_whose_statement_is_this(self):
         with patch("builtins.input", return_value="Sophie"):
@@ -74,11 +75,10 @@ class TestGetDetails(unittest.TestCase, TestData):
         assert person == "Sophie"
         assert person != "Michael"
     
-    # def tearDown(self) -> None:
-    #     return super().cleanUp()
-    
+
 class TestReadStatement(unittest.TestCase, TestData):
     #TODO test for skipping a transaction in a statement
+
     def test_one_person_pays_for_all_transactions(self):
         case = {   
                 "statement_owner": self.NAMES[1],
@@ -91,6 +91,7 @@ class TestReadStatement(unittest.TestCase, TestData):
         with patch("builtins.input", return_value=case['return_value']):
             owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
         assert case['expected'] == owed_from_statement
+
 
     def test_2_people_go_halves_on_all_transactions(self):
         case = {
@@ -107,6 +108,7 @@ class TestReadStatement(unittest.TestCase, TestData):
             owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
         assert case['expected'] == owed_from_statement
 
+
     def test_3_people_split_cost(self):
         case = {   
                 "statement_owner": self.NAMES[0],
@@ -122,13 +124,11 @@ class TestReadStatement(unittest.TestCase, TestData):
             owed_from_statement = read_statement(self.STATEMENTS[0], case['statement_owner'], self.DIRECTORY)
         assert case['expected'] == owed_from_statement
 
-    # def tearDown(self) -> None:
-    #     return super().cleanUp()
-
 
 class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestData):
 
     def test_can_merge_empty_totals_with_totals_from_statement(self):
+        self.create_empty_totals_spreadsheet()
         case = {
                 "statement_owner": self.NAMES[1],
                 "return_value": "Jan",
@@ -170,5 +170,3 @@ class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestDat
         assert case['expected'][0] in updated_totals
         assert case['expected'][1] in updated_totals
 
-    # def tearDown(self) -> None:
-    #     return super().cleanUp()
