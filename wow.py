@@ -46,7 +46,16 @@ def whose_statement(statement, people):
 def triage_transactions(statement, directory, statement_owner, names, totals_spreadsheet):
     owed_from_statement = read_statement(statement, statement_owner, directory)
     new_total_owed = merge_owed_from_statement_with_totals(directory, statement_owner, totals_spreadsheet, owed_from_statement)
+    write_to_totals_spreadsheet(directory, names, totals_spreadsheet, new_total_owed)
 
+
+def write_to_totals_spreadsheet(directory, names, totals_spreadsheet, new_total_owed):
+    with open(directory + totals_spreadsheet, "w") as t:
+        header = ["person_owed"] + names
+        writer = csv.DictWriter(t, header)
+        for row in new_total_owed:
+            writer.writerow(row)
+        
 
 def read_statement(statement, statement_owner, directory):
     with open(directory + statement, "r") as persons_statement:
@@ -75,11 +84,10 @@ def merge_owed_from_statement_with_totals(directory, statement_owner, name_of_to
     with open(directory + name_of_totals_spreadsheet, "r") as read_totals:
         totals_csv_object = csv.DictReader(read_totals)
         totals_spreadsheet_values_are_strings = list(totals_csv_object)
-        totals_spreadsheet = convert_all_values_to_floats(statement_owner, totals_spreadsheet_values_are_strings)
+        totals_spreadsheet = convert_all_values_to_floats(totals_spreadsheet_values_are_strings)
         statement = owed_from_current_statement
         people_who_owe_from_statement = list(statement.keys())
         people_who_owe_from_statement.remove("person_owed")
-        people_owed_in_totals_spreadsheet = [person["person_owed"] for person in totals_spreadsheet if person["person_owed"] != statement_owner]
         if len(totals_spreadsheet) == 0:
             totals_spreadsheet.append(statement)
             return totals_spreadsheet
@@ -91,10 +99,10 @@ def merge_owed_from_statement_with_totals(directory, statement_owner, name_of_to
                         row[person] += float(statement[person])
                     except ValueError:
                         row[person] = float(statement[person])
-
     return totals_spreadsheet
 
-def convert_all_values_to_floats(statement_owner, totals_spreadsheet):
+
+def convert_all_values_to_floats(totals_spreadsheet):
     for row in totals_spreadsheet:
         for person in row:
             if person != "person_owed":

@@ -127,6 +127,7 @@ class TestReadStatement(unittest.TestCase, TestData):
 
 class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestData):
 
+
     def test_can_merge_empty_totals_with_totals_from_statement(self):
         self.create_empty_totals_spreadsheet()
         case = {
@@ -171,3 +172,37 @@ class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestDat
         assert case['expected'][1] in updated_totals
         assert len(updated_totals) == 2
 
+class TestWriteTotalsSpreadsheet(unittest.TestCase, TestData):
+
+    def test_can_write_to_totals_spreadsheet(self):
+        case = {
+                "statement_owner": self.NAMES[1],
+                "return_value": "Jan",
+                "statement": self.STATEMENTS[0],
+                "totals_spreadsheet": "../prefilled_totals.csv",
+                "expected": [
+                    {
+                        "person_owed": "Sophie",
+                        "Jan": "190.0",
+                        "Sophie": "0.0"
+                    },
+                    {
+                        "person_owed": "Jan",
+                        "Jan": "0.0",
+                        "Sophie":"10.0"
+                    }
+                ]
+            }
+        with patch("builtins.input", return_value=case['return_value']):
+            owed_from_statement = read_statement(case['statement'], case['statement_owner'], self.DIRECTORY)
+    
+        updated_totals = merge_owed_from_statement_with_totals(self.DIRECTORY, case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)        
+
+        write_to_totals_spreadsheet(self.DIRECTORY, self.NAMES, self.TOTALS_SPREADSHEET, updated_totals)
+
+        with open(self.DIRECTORY + self.TOTALS_SPREADSHEET, "r") as t:
+            header = ['person_owed'] + self.NAMES
+            reader = csv.DictReader(t, header)
+            list_of_rows = list(reader)
+            print("LIST", list_of_rows)
+            assert case['expected'] == list_of_rows
