@@ -75,26 +75,23 @@ def merge_owed_from_statement_with_totals(directory, statement_owner, name_of_to
     with open(directory + name_of_totals_spreadsheet, "r") as read_totals:
         totals_csv_object = csv.DictReader(read_totals)
         totals_spreadsheet_values_are_strings = list(totals_csv_object)
-        print("AS STRINGS", totals_spreadsheet_values_are_strings)
         totals_spreadsheet = convert_all_values_to_floats(statement_owner, totals_spreadsheet_values_are_strings)
-        print("AS FLOATS", totals_spreadsheet)
         statement = owed_from_current_statement
-        people_who_owe_statement_owner_from_this_statement = list(statement.keys())
-        people_who_owe_statement_owner_from_this_statement.remove("person_owed")
+        people_who_owe_from_statement = list(statement.keys())
+        people_who_owe_from_statement.remove("person_owed")
         people_owed_in_totals_spreadsheet = [person["person_owed"] for person in totals_spreadsheet if person["person_owed"] != statement_owner]
-        # If statement owner already has a row in totals spreadsheet
-        for row in totals_spreadsheet:
-            if row["person_owed"] == statement_owner:
-                    for person in people_who_owe_statement_owner_from_this_statement:
-                        try:
-                            row[person] = float(row[person]) + statement[person]
-                        except KeyError:
-                            row.update({
-                                person: row[person]
-                            })
-        # If statement owner doesn't have a row in totals spreadsheet
-        if statement_owner not in people_owed_in_totals_spreadsheet:
+        if len(totals_spreadsheet) == 0:
             totals_spreadsheet.append(statement)
+            return totals_spreadsheet
+            
+        for row in totals_spreadsheet:
+            if row['person_owed'] == statement_owner:
+                for person in people_who_owe_from_statement:
+                    try:
+                        row[person] += float(statement[person])
+                    except ValueError:
+                        row[person] = float(statement[person])
+
     return totals_spreadsheet
 
 def convert_all_values_to_floats(statement_owner, totals_spreadsheet):

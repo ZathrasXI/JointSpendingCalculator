@@ -169,4 +169,5 @@ class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestDat
         updated_totals = merge_owed_from_statement_with_totals(self.DIRECTORY, case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)
         assert case['expected'][0] in updated_totals
         assert case['expected'][1] in updated_totals
+        assert len(updated_totals) == 2
 
