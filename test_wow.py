@@ -127,7 +127,6 @@ class TestReadStatement(unittest.TestCase, TestData):
 
 class TestMergeTotalsSpreadsheetWithOwedFromStatement(unittest.TestCase, TestData):
 
-
     def test_can_merge_empty_totals_with_totals_from_statement(self):
         self.create_empty_totals_spreadsheet()
         case = {
@@ -206,3 +205,5 @@ class TestWriteTotalsSpreadsheet(unittest.TestCase, TestData):
             list_of_rows = list(reader)
             print("LIST", list_of_rows)
             assert case['expected'] == list_of_rows
+
+        self.remove_totals_spreadsheet()
