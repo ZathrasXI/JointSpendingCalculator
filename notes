@@ -3,3 +3,5 @@ Make all names lower case when inputted
 No null values in totals spreadsheet, 
     if no one owes anything, then 0.0, 
     no one can owe themself anything, they owe themselves 'X'
+
+export to html and pdf 
