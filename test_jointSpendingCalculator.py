@@ -22,7 +22,8 @@ def totals_spreadsheet(directory):
     SPREADSHEET_NAME = "totals"
     with patch("builtins.input", return_value=SPREADSHEET_NAME):
         TOTALS_SPREADSHEET, HEADER = create_totals_file(directory)
-    return TOTALS_SPREADSHEET, HEADER
+    yield TOTALS_SPREADSHEET, HEADER
+    os.remove(directory + TOTALS_SPREADSHEET)
 
 @pytest.fixture
 def statements(directory, totals_spreadsheet):
@@ -30,11 +31,11 @@ def statements(directory, totals_spreadsheet):
     s = get_statements(directory, totals_spreadsheet_name)
     return s
 
-#TODO teardown
 @pytest.fixture
 def remove_totals_spreadsheet(directory, totals_spreadsheet):
     filename, _ = totals_spreadsheet
     os.remove(directory + filename)
+
 
 class TestGetDetails:
 
