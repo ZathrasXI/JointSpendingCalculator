@@ -5,6 +5,7 @@ from jointSpendingCalculator import *
 import os
 import csv
 
+
 @pytest.fixture
 def directory():
     with patch('builtins.input', return_value='test_data'):
@@ -17,7 +18,7 @@ def names():
         NAMES = get_names()
     return NAMES
 
-@pytest.fixture
+@pytest.fixture()
 def totals_spreadsheet(directory):
     SPREADSHEET_NAME = "totals"
     with patch("builtins.input", return_value=SPREADSHEET_NAME):
@@ -50,8 +51,8 @@ class TestGetDetails:
 
 
     def test_folder_contains_correct_statements(self, statements):
-        statement_1 = 'jans_statement.csv'
-        statement_2 = 'sophies_statement.csv'
+        statement_1 = 'expensive_statement.csv'
+        statement_2 = 'cheaper_statement.csv'
         statement_3 = 'jans_coop_bank_statement.csv'
         assert statement_1 in statements
         assert statement_2 in statements
@@ -74,80 +75,106 @@ class TestGetDetails:
 
 class TestReadStatement:
 
-    def test_one_person_pays_for_all_transactions(self, directory):
-        case = {   
-                "statement_owner": "Sophie",
-                "statement":"sophies_statement.csv",
-                "return_value": "Jan",
-                "expected": {
-                    "person_owed":"Sophie",
-                    "Jan":90.0
-                }
+    test_cases = [
+        # Read Padme's statement - Jan pays for everything
+        ( 
+            "Padme",
+            "cheaper_statement.csv",
+            "Jan", 
+            {
+                "person_owed":"Padme",
+                "Jan":90.0
             }
-        with patch("builtins.input", return_value=case['return_value']):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(case["statement"], case['statement_owner'], directory)
-        assert case['expected'] == owed_from_statement
+        ),
 
-
-    def test_2_people_go_halves_on_all_transactions(self, directory):
-        case = {
-                "statement_owner": "Sophie",
-                "statement":"sophies_statement.csv",
-                "return_value": "Jan James",
-                "expected": {
-                    "person_owed": "Sophie",
-                    "Jan": 45.0,
-                    "James": 45.0
-                }
+        # Read Reggie's statement - Jan and Sophie split everything
+        ( 
+            "Reggie", 
+            "cheaper_statement.csv", 
+            "Jan Sophie", 
+            {
+                "person_owed": "Reggie",
+                "Jan": 45.0,
+                "Sophie": 45.0                
             }
-        
-        with patch("builtins.input", return_value=case['return_value']):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(case["statement"], case['statement_owner'], directory)
-        assert case['expected'] == owed_from_statement
+        ),
 
-
-    def test_3_people_split_cost(self, directory):
-        case = {   
-                "statement_owner": "Jan",
-                "statement":"sophies_statement.csv",
-                "return_value": "Sophie Jane Sven",
-                "expected": {
-                    "person_owed": "Jan",
-                    "Sophie": 30.0,
-                    "Jane": 30.0,
-                    "Sven": 30.0
-                }
+        # Read Jan's statement - Sophie, Jane, Sven split everything between them
+        ( 
+            "Jan",
+            "cheaper_statement.csv",
+            "Sophie Jane Sven",
+            {
+                "person_owed": "Jan",
+                "Sophie": 30.0,
+                "Jane": 30.0,
+                "Sven": 30.0
             }
-        with patch("builtins.input", return_value=case['return_value']):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(case["statement"], case['statement_owner'], directory)
-        assert case['expected'] == owed_from_statement
-
-
-class TestMergeTotalsSpreadsheetWithOwedFromStatement:
-
-    def test_can_merge_empty_totals_with_totals_from_statement(self, directory, totals_spreadsheet):
-        totals, _ = totals_spreadsheet
-        d = directory
-        case = {
-                "statement_owner": "Sophie",
-                "return_value": "Jan",
-                "statement": "sophies_statement.csv",
-                "totals_spreadsheet": totals,
-                "expected": {
-                    "person_owed": "Sophie",
-                    "Jan": 90.0,
-                }
+        ),
+        # Read Sophie's statement - Sophie and Lou split everything between them
+        (
+            "Sophie",
+            "expensive_statement.csv",
+            "Sophie Lou",
+            {
+                "person_owed": "Sophie",
+                "Sophie": 0.0,
+                "Lou": 205.00
             }
-        with patch("builtins.input", return_value=case['return_value']):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(case['statement'], case['statement_owner'], d)
-        updated_totals, _ = merge_owed_from_statement_with_totals(d, everyone_who_owes_from_this_statement, case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)
-        assert case['expected'] == updated_totals[0]
+        )
+        ]
+
+    @pytest.mark.parametrize("statement_owner,statement,return_value,expected", test_cases)
+    def test_read_statement(self, statement_owner, statement, return_value, expected, directory):
+        with patch("builtins.input", return_value=return_value):
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
+        people = return_value.split(' ')
+        assert expected == owed_from_statement
+        assert people.sort() == everyone_who_owes_from_this_statement.sort()
+
+
+class TestReadThenMerge:
+    '''Merge the values owed from a statement with the values in a totals spreadsheet'''
+    test_cases = [
+        # Read Sophie's statement and merge the money owed with the values
+        #     from an empty totals spreadsheet. 
+        ( 
+            "Sophie",
+            "cheaper_statement.csv",
+            "Jan",
+            {
+                "person_owed": "Sophie",
+                "Jan": 90.0
+            }
+        ),
+        (
+            "Denise",
+            "cheaper_statement.csv",
+            "Asa",
+            {
+                "person_owed":"Denise",
+                "Asa":90.0
+            }
+        )
+    ]
+
+    @pytest.mark.parametrize("statement_owner,statement,return_value,expected", test_cases)
+    def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, totals_spreadsheet):
+        dir = directory
+        prefilled_totals = "../prefilled_totals.csv"
+        totals, header = totals_spreadsheet
+        with patch("builtins.input", return_value=return_value):
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, dir)
+        updated_totals, _ = merge_owed_from_statement_with_totals(dir, everyone_who_owes_from_this_statement, statement_owner, totals, owed_from_statement)
+        assert expected == updated_totals[0]
+        assert len(updated_totals) == 1
+
 
     def test_can_update_prepopulated_totals_statement_one_person_paid_for_everything(self, directory):
         case = {
                 "statement_owner": "Sophie",
                 "return_value": "Jan",
-                "statement": "sophies_statement.csv",
+                "statement": "cheaper_statement.csv",
                 "totals_spreadsheet": "../prefilled_totals.csv",
                 "expected": [
                     {
@@ -172,13 +199,12 @@ class TestMergeTotalsSpreadsheetWithOwedFromStatement:
 
 
 class TestWriteTotalsSpreadsheet:
-
     def test_can_write_to_totals_spreadsheet(self, totals_spreadsheet, directory):
         totals_sheet, header = totals_spreadsheet
         case = {
                 "statement_owner": "Sophie",
                 "return_value": "Jan",
-                "statement": "sophies_statement.csv",
+                "statement": "cheaper_statement.csv",
                 "totals_spreadsheet": "../prefilled_totals.csv",
                 "expected": [
                     {

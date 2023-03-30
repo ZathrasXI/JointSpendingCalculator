@@ -45,7 +45,6 @@ def whose_statement(statement):
 def triage_transactions(statement, directory, statement_owner, totals_spreadsheet):
     owed_from_statement, names = read_statement(statement, statement_owner, directory)
     new_total_owed, header = merge_owed_from_statement_with_totals(directory, names, statement_owner, totals_spreadsheet, owed_from_statement)
-    print("HEADY", header)
     write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed)
 
 
