@@ -66,7 +66,6 @@ def read_statement(statement, statement_owner, directory):
         for transaction in statement_reader:
             try:
                 cost = float(transaction[" Money Out"])
-                print("COST", cost)
             except TypeError and ValueError:
                 continue
             print(f"\n{transaction}\n")
@@ -91,26 +90,29 @@ def merge_owed_from_statement_with_totals(directory, names, statement_owner, nam
     header = []
     with open(directory + name_of_totals_spreadsheet, "r") as read_totals:
         totals_csv_object = csv.DictReader(read_totals)
+
         header = list(totals_csv_object.fieldnames)
         for name in names:
             if name not in header:
                 header.append(name)
 
         totals_spreadsheet = convert_all_values_to_floats(list(totals_csv_object))
-        statement = owed_from_current_statement
-        people_who_owe_from_statement = list(statement.keys())
+        people_who_owe_from_statement = list(owed_from_current_statement.keys())
         people_who_owe_from_statement.remove("person_owed")
-        if len(totals_spreadsheet) == 0:
-            totals_spreadsheet.append(statement)
-            return totals_spreadsheet, header
-            
+        names_already_in_totals_spreadsheet = []
+        for row in totals_spreadsheet:
+            names_already_in_totals_spreadsheet.append(row["person_owed"])
+        
         for row in totals_spreadsheet:
             if row['person_owed'] == statement_owner:
                 for person in people_who_owe_from_statement:
                     try:
-                        row[person] += float(statement[person])
+                        row[person] += float(owed_from_current_statement[person])
                     except ValueError:
-                        row[person] = float(statement[person])
+                        row[person] = float(owed_from_current_statement[person])
+        if statement_owner not in names_already_in_totals_spreadsheet:
+            totals_spreadsheet.append(owed_from_current_statement)
+            
         return totals_spreadsheet, header
 
 

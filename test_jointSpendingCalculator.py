@@ -138,6 +138,7 @@ class TestReadStatement:
 class TestReadThenMerge:
     '''Merge the values owed from a statement with the values in a totals spreadsheet'''
     test_cases = [
+        # Can add values to an empty totals spreadsheet
         ( 
             "Denise",
             "cheaper_statement.csv",
@@ -150,6 +151,7 @@ class TestReadThenMerge:
                 }
             ]
         ),
+        # Can update values for names already in the totals spreadsheet
         (
             "Sophie",
             "cheaper_statement.csv",
@@ -167,31 +169,31 @@ class TestReadThenMerge:
                     "Sophie":10.0
                 }
             ]
+        ),
+        # Can add new statement owner to the totals spreadsheet
+        ( 
+            "Honza",
+            "cheaper_statement.csv",
+            "Petr Daniela",
+            "../prefilled_totals.csv",
+            [
+                {
+                    "person_owed": "Sophie",
+                    "Jan": 100.0,
+                    "Sophie": 0.0
+                },
+                {
+                    "person_owed": "Jan",
+                    "Sophie": 10.0,
+                    "Jan": 0.0
+                },
+                {
+                    "person_owed": "Honza",
+                    "Petr": 45.0,
+                    "Daniela": 45.0
+                }
+            ]
         )
-        # ( 
-        #     "Honza",
-        #     "cheaper_statement.csv",
-        #     "Petr Daniela",
-        #     "../prefilled_totals.csv",
-        #     [
-        #         {
-        #             "person_owed": "Honza",
-        #             "Petr": 45.0,
-        #             "Daniela": 45.0
-        #         },
-        #         {
-        #             "person_owed": "Sophie",
-        #             "Jan": 100.0,
-        #             "Sophie": 0.0
-        #         },
-        #         {
-        #             "person_owed": "Jan",
-        #             "Sophie": 10.0,
-        #             "Jan": 0.0
-        #         }
-        #     ]
-        # )
-
     ]
 
     @pytest.mark.parametrize("statement_owner,statement,return_value,t_s,expected", test_cases)
