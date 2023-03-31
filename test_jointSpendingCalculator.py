@@ -171,9 +171,9 @@ class TestReadThenMerge:
         ),
         # Can add new statement owner to the totals spreadsheet
         ( 
-            "Honza",
-            "cheaper_statement.csv",
-            "Petr Daniela",
+            "Martin",
+            "expensive_statement.csv",
+            "Petr Daniela Sophie Jan",
             "../prefilled_totals.csv",
             [
                 {
@@ -187,12 +187,15 @@ class TestReadThenMerge:
                     "Jan": 0.0
                 },
                 {
-                    "person_owed": "Honza",
-                    "Petr": 45.0,
-                    "Daniela": 45.0
+                    "person_owed": "Martin",
+                    "Petr": 102.5,
+                    "Daniela": 102.5,
+                    "Jan": 102.5,
+                    "Sophie": 102.5
                 }
             ]
         )
+
     ]
 
     @pytest.mark.parametrize("statement_owner,statement,return_value,t_s,expected", test_cases)
