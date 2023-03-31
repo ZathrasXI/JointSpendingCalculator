@@ -34,7 +34,7 @@ def create_totals_file(folder):
         column_names = ["person_owed"] 
         csv_writer = csv.DictWriter(totals, fieldnames=column_names)
         csv_writer.writeheader()
-    return filename, column_names
+    return filename
 
 
 def whose_statement(statement):
@@ -129,7 +129,7 @@ def convert_all_values_to_floats(totals_spreadsheet):
 
 def main():
     folder = find_folder()
-    new_totals_spreadsheet, spreadsheet_header = create_totals_file(folder)
+    new_totals_spreadsheet = create_totals_file(folder)
     statements = get_statements(folder, new_totals_spreadsheet)
     for statement in statements:
         if statement != new_totals_spreadsheet:

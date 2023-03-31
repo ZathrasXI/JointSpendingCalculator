@@ -22,19 +22,19 @@ def names():
 def totals_spreadsheet(directory):
     SPREADSHEET_NAME = "totals"
     with patch("builtins.input", return_value=SPREADSHEET_NAME):
-        TOTALS_SPREADSHEET, HEADER = create_totals_file(directory)
-    yield TOTALS_SPREADSHEET, HEADER
+        TOTALS_SPREADSHEET = create_totals_file(directory)
+    yield TOTALS_SPREADSHEET
     os.remove(directory + TOTALS_SPREADSHEET)
 
 @pytest.fixture
 def statements(directory, totals_spreadsheet):
-    totals_spreadsheet_name, _ = totals_spreadsheet
+    totals_spreadsheet_name = totals_spreadsheet
     s = get_statements(directory, totals_spreadsheet_name)
     return s
 
 @pytest.fixture
 def remove_totals_spreadsheet(directory, totals_spreadsheet):
-    filename, _ = totals_spreadsheet
+    filename = totals_spreadsheet
     os.remove(directory + filename)
 
 
@@ -61,9 +61,8 @@ class TestGetDetails:
 
     def test_create_totals_file(self, directory):
         with patch("builtins.input", return_value="totals"):
-            spreadsheet, header = create_totals_file(directory)
+            spreadsheet = create_totals_file(directory)
         assert os.path.isfile(directory + spreadsheet) is True
-        assert header == ['person_owed']
 
 
     def test_whose_statement_is_this(self, statements):
@@ -151,7 +150,7 @@ class TestReadThenMerge:
                 }
             ]
         ),
-        # Can update values for names already in the totals spreadsheet
+        # Can update values  names already in the totals spreadsheet
         (
             "Sophie",
             "cheaper_statement.csv",
@@ -200,7 +199,7 @@ class TestReadThenMerge:
     def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, t_s, totals_spreadsheet):
         dir = directory
         if t_s == "totals.csv":
-            totals, _ = totals_spreadsheet
+            totals = totals_spreadsheet
         else:
             totals = t_s
 
@@ -212,7 +211,7 @@ class TestReadThenMerge:
 
 class TestWriteTotalsSpreadsheet:
     def test_can_write_to_totals_spreadsheet(self, totals_spreadsheet, directory):
-        totals_sheet, header = totals_spreadsheet
+        totals_sheet = totals_spreadsheet
         case = {
                 "statement_owner": "Sophie",
                 "return_value": "Jan",
