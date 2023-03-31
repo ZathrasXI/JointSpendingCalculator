@@ -195,16 +195,15 @@ class TestReadThenMerge:
                 }
             ]
         )
-
     ]
 
-    @pytest.mark.parametrize("statement_owner,statement,return_value,t_s,expected", test_cases)
-    def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, t_s, totals_spreadsheet):
+    @pytest.mark.parametrize("statement_owner,statement,return_value,totals_statement,expected", test_cases)
+    def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, totals_statement, totals_spreadsheet):
         dir = directory
-        if t_s == "totals.csv":
+        if totals_statement == "totals.csv":
             totals = totals_spreadsheet
         else:
-            totals = t_s
+            totals = totals_statement
 
         with patch("builtins.input", return_value=return_value):
             owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, dir)
@@ -213,40 +212,51 @@ class TestReadThenMerge:
 
 
 class TestWriteTotalsSpreadsheet:
-    def test_can_write_to_totals_spreadsheet(self, totals_spreadsheet, directory):
-        totals_sheet = totals_spreadsheet
-        case = {
-                "statement_owner": "Sophie",
-                "return_value": "Jan",
-                "statement": "cheaper_statement.csv",
-                "totals_spreadsheet": "../prefilled_totals.csv",
-                "expected": [
-                    {
-                        'person_owed': 'person_owed', 
-                        'Jan': 'Jan', 
-                        'Sophie': 'Sophie'
-                    },
-                    {
-                        "person_owed": "Sophie",
-                        "Jan": "190.0",
-                        "Sophie": "0.0"
-                    },
-                    {
-                        "person_owed": "Jan",
-                        "Jan": "0.0",
-                        "Sophie":"10.0"
-                    }
-                ]
-            }
-        with patch("builtins.input", return_value=case['return_value']):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(case['statement'], case['statement_owner'], directory)
+    test_cases = [
+        (
+            "Sophie",
+            "Jan",
+            "cheaper_statement.csv",
+            "../prefilled_totals.csv",
+            [
+                {
+                    'person_owed': 'person_owed', 
+                    'Jan': 'Jan', 
+                    'Sophie': 'Sophie'
+                },
+                {
+                    "person_owed": "Sophie",
+                    "Jan": "190.0",
+                    "Sophie": "0.0"
+                },
+                {
+                    "person_owed": "Jan",
+                    "Jan": "0.0",
+                    "Sophie":"10.0"
+                }
+            ]
+        )
+    ]
+
     
-        updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,case['statement_owner'], case['totals_spreadsheet'], owed_from_statement)        
+    @pytest.mark.parametrize("statement_owner,return_value,statement,totals_statement,expected", test_cases)
+    def test_can_write_to_totals_spreadsheet(self, statement_owner, return_value, statement, totals_statement, expected, totals_spreadsheet, directory):
+        totals_sheet = totals_spreadsheet
+
+        with patch("builtins.input", return_value=return_value):
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
+
+        if totals_statement == '../prefilled_totals.csv':
+            totals = totals_statement
+        else:
+            totals = totals_statement
+
+        updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,statement_owner, totals, owed_from_statement)        
         write_to_totals_spreadsheet(directory, header, totals_sheet, updated_totals)
 
         with open(directory + totals_sheet, "r") as t:
             reader = csv.DictReader(t, fieldnames=header)
             print("FIELDNAMES", reader.fieldnames)
             list_of_rows = list(reader)
-            assert case['expected'] == list_of_rows
+            assert expected == list_of_rows
 
