@@ -5,3 +5,9 @@ No null values in totals spreadsheet,
     no one can owe themself anything, they owe themselves 'X'
 
 export to html and pdf 
+
+What I've learned:
+- how to use PyTest
+- how to do Table Driven Testing with PyTest
+- how to setup up testing in the pipeline on GitHub
+- how to write unit tests

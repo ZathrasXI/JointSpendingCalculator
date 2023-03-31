@@ -66,6 +66,7 @@ def read_statement(statement, statement_owner, directory):
         for transaction in statement_reader:
             try:
                 cost = float(transaction[" Money Out"])
+                print("COST", cost)
             except TypeError and ValueError:
                 continue
             print(f"\n{transaction}\n")
@@ -78,10 +79,11 @@ def read_statement(statement, statement_owner, directory):
                     everyone_who_owes_from_this_statement.append(person)
 
             how_much_each_person_owes = round(cost / len(people_who_owe), 2)
+
             for person in people_who_owe:
                 if person not in owes_from_statement: owes_from_statement[person] = 0.0
                 if person.lower() != statement_owner.lower():
-                    owes_from_statement[person] += how_much_each_person_owes
+                    owes_from_statement[person] = round(owes_from_statement[person] + how_much_each_person_owes, 2)
     return owes_from_statement, everyone_who_owes_from_this_statement
 
 
