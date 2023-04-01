@@ -58,11 +58,11 @@ def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total
     
 
 def read_statement(statement, statement_owner, directory):
-    everyone_who_owes_from_this_statement = []
+    names = [statement_owner]
     with open(directory + statement, "r") as persons_statement:
         statement_reader = csv.DictReader(persons_statement)
         print(f"For each transaction in {statement} enter the name of everyone who should pay for this item. Remember to include yourself...") # ..."by typing me." ?
-        owes_from_statement = {"person_owed": statement_owner}
+        owes_from_statement = {"person_owed": statement_owner, statement_owner: 0.0}
         for transaction in statement_reader:
             try:
                 cost = float(transaction[" Money Out"])
@@ -74,8 +74,8 @@ def read_statement(statement, statement_owner, directory):
             people_who_owe = [person for person in list_of_names_unformatted if person != ""]
 
             for person in people_who_owe:
-                if person not in everyone_who_owes_from_this_statement:
-                    everyone_who_owes_from_this_statement.append(person)
+                if person not in names:
+                    names.append(person)
 
             how_much_each_person_owes = round(cost / len(people_who_owe), 2)
 
@@ -83,7 +83,7 @@ def read_statement(statement, statement_owner, directory):
                 if person not in owes_from_statement: owes_from_statement[person] = 0.0
                 if person.lower() != statement_owner.lower():
                     owes_from_statement[person] = round(owes_from_statement[person] + how_much_each_person_owes, 2)
-    return owes_from_statement, everyone_who_owes_from_this_statement
+    return owes_from_statement, names
 
 
 def merge_owed_from_statement_with_totals(directory, names, statement_owner, name_of_totals_spreadsheet, owed_from_current_statement):
@@ -101,9 +101,11 @@ def merge_owed_from_statement_with_totals(directory, names, statement_owner, nam
         people_who_owe_from_statement.remove("person_owed")
         names_already_in_totals_spreadsheet = []
         for row in totals_spreadsheet:
-            names_already_in_totals_spreadsheet.append(row["person_owed"])
-        
+                names_already_in_totals_spreadsheet.append(row["person_owed"])
         for row in totals_spreadsheet:
+            for name in names:
+                if name not in row:
+                    row[name] = 0.0
             if row['person_owed'] == statement_owner:
                 for person in people_who_owe_from_statement:
                     try:
@@ -112,7 +114,6 @@ def merge_owed_from_statement_with_totals(directory, names, statement_owner, nam
                         row[person] = float(owed_from_current_statement[person])
         if statement_owner not in names_already_in_totals_spreadsheet:
             totals_spreadsheet.append(owed_from_current_statement)
-            
         return totals_spreadsheet, header
 
 

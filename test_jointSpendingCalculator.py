@@ -82,7 +82,8 @@ class TestReadStatement:
             "Jan", 
             {
                 "person_owed":"Padme",
-                "Jan":90.0
+                "Jan":90.0,
+                "Padme":0.0
             }
         ),
 
@@ -94,7 +95,8 @@ class TestReadStatement:
             {
                 "person_owed": "Reggie",
                 "Jan": 45.0,
-                "Sophie": 45.0                
+                "Sophie": 45.0,
+                "Reggie": 0.0                
             }
         ),
 
@@ -107,7 +109,8 @@ class TestReadStatement:
                 "person_owed": "Jan",
                 "Sophie": 30.0,
                 "Jane": 30.0,
-                "Sven": 30.0
+                "Sven": 30.0,
+                "Jan": 0.0
             }
         ),
         # Read Sophie's statement - Sophie and Lou split everything between them
@@ -146,7 +149,8 @@ class TestReadThenMerge:
             [
                 {
                     "person_owed": "Denise",
-                    "Jan": 90.0
+                    "Jan": 90.0,
+                    "Denise": 0.0
                 }
             ]
         ),
@@ -179,19 +183,26 @@ class TestReadThenMerge:
                 {
                     "person_owed": "Sophie",
                     "Jan": 100.0,
-                    "Sophie": 0.0
+                    "Sophie": 0.0,
+                    "Petr": 0.0,
+                    "Daniela": 0.0,
+                    "Martin": 0.0
                 },
                 {
                     "person_owed": "Jan",
                     "Sophie": 10.0,
-                    "Jan": 0.0
+                    "Jan": 0.0,
+                    "Petr": 0.0,
+                    "Daniela": 0.0,
+                    "Martin": 0.0
                 },
                 {
                     "person_owed": "Martin",
                     "Petr": 102.5,
                     "Daniela": 102.5,
                     "Jan": 102.5,
-                    "Sophie": 102.5
+                    "Sophie": 102.5,
+                    "Martin": 0.0
                 }
             ]
         )
@@ -213,6 +224,9 @@ class TestReadThenMerge:
 
 class TestWriteTotalsSpreadsheet:
     test_cases = [
+        # Can read a statement, 1 person pays for everything
+        # Can update values for names already in pre-populated totals statement
+        # Can re-write spreadsheet with updated values
         (
             "Sophie",
             "Jan",
@@ -235,28 +249,58 @@ class TestWriteTotalsSpreadsheet:
                     "Sophie":"10.0"
                 }
             ]
+        ),
+        # Can read a spreadsheet, 3 people split cost
+        # Can merge with empty totals spreadsheet
+        # Can write to totals statement
+        (
+            "Sophie",
+            "Jan Finn Lou",
+            "cheaper_statement.csv",
+            "../prefilled_totals.csv",
+            [
+                {
+                    'person_owed': 'person_owed', 
+                    'Jan': 'Jan', 
+                    'Sophie': 'Sophie',
+                    'Finn': 'Finn',
+                    'Lou': 'Lou'
+                },
+                {
+                    "person_owed": "Sophie",
+                    "Jan": "130.0",
+                    "Sophie": "0.0",
+                    "Lou": "30.0",
+                    "Finn": "30.0"
+                },
+                {
+                    "person_owed": "Jan",
+                    "Jan": "0.0",
+                    "Sophie":"10.0",
+                    "Finn":"0.0",
+                    "Lou": "0.0"
+                }
+            ]
         )
     ]
 
-    
+
     @pytest.mark.parametrize("statement_owner,return_value,statement,totals_statement,expected", test_cases)
     def test_can_write_to_totals_spreadsheet(self, statement_owner, return_value, statement, totals_statement, expected, totals_spreadsheet, directory):
         totals_sheet = totals_spreadsheet
-
-        with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
-
         if totals_statement == '../prefilled_totals.csv':
             totals = totals_statement
         else:
             totals = totals_statement
+
+        with patch("builtins.input", return_value=return_value):
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
 
         updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,statement_owner, totals, owed_from_statement)        
         write_to_totals_spreadsheet(directory, header, totals_sheet, updated_totals)
 
         with open(directory + totals_sheet, "r") as t:
             reader = csv.DictReader(t, fieldnames=header)
-            print("FIELDNAMES", reader.fieldnames)
-            list_of_rows = list(reader)
-            assert expected == list_of_rows
+            newly_written_totals_sheet = list(reader)
+            assert newly_written_totals_sheet == expected 
 
