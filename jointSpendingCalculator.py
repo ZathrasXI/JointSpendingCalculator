@@ -31,7 +31,7 @@ def create_totals_file(folder):
     directory = add_trailing_slash_if_needed(folder)
     path_to_file = directory + filename
     with open(path_to_file, 'w') as totals:
-        column_names = ["person_owed"] 
+        column_names = ["owes"] 
         csv_writer = csv.DictWriter(totals, fieldnames=column_names)
         csv_writer.writeheader()
     return filename
@@ -49,7 +49,7 @@ def triage_transactions(statement, directory, statement_owner, totals_spreadshee
 
 
 def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed):
-    header.insert(0, "person_owed")
+    header.insert(0, "owes")
     with open(directory + totals_spreadsheet, "w") as t:
         writer = csv.DictWriter(t,header)
         writer.writeheader()
@@ -62,7 +62,7 @@ def read_statement(statement, statement_owner, directory):
     with open(directory + statement, "r") as persons_statement:
         statement_reader = csv.DictReader(persons_statement)
         print(f"For each transaction in {statement} enter the name of everyone who should pay for this item. Remember to include yourself...") # ..."by typing me." ?
-        owes_from_statement = {"person_owed": statement_owner, statement_owner: 0.0}
+        owes_from_statement = {"owes": statement_owner, statement_owner: 0.0}
         for transaction in statement_reader:
             try:
                 cost = float(transaction[" Money Out"])
@@ -98,15 +98,15 @@ def merge_owed_from_statement_with_totals(directory, names, statement_owner, nam
 
         totals_spreadsheet = convert_all_values_to_floats(list(totals_csv_object))
         people_who_owe_from_statement = list(owed_from_current_statement.keys())
-        people_who_owe_from_statement.remove("person_owed")
+        people_who_owe_from_statement.remove("owes")
         names_already_in_totals_spreadsheet = []
         for row in totals_spreadsheet:
-                names_already_in_totals_spreadsheet.append(row["person_owed"])
+                names_already_in_totals_spreadsheet.append(row["owes"])
         for row in totals_spreadsheet:
             for name in names:
                 if name not in row:
                     row[name] = 0.0
-            if row['person_owed'] == statement_owner:
+            if row['owes'] == statement_owner:
                 for person in people_who_owe_from_statement:
                     try:
                         row[person] += float(owed_from_current_statement[person])
@@ -120,7 +120,7 @@ def merge_owed_from_statement_with_totals(directory, names, statement_owner, nam
 def convert_all_values_to_floats(totals_spreadsheet):
     for row in totals_spreadsheet:
         for person in row:
-            if person != "person_owed":
+            if person != "owes":
                 try:
                     row[person] = float(row[person])
                 except ValueError:

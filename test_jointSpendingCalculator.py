@@ -81,7 +81,7 @@ class TestReadStatement:
             "cheaper_statement.csv",
             "Jan", 
             {
-                "person_owed":"Padme",
+                "owes":"Padme",
                 "Jan":90.0,
                 "Padme":0.0
             }
@@ -93,7 +93,7 @@ class TestReadStatement:
             "cheaper_statement.csv", 
             "Jan Sophie", 
             {
-                "person_owed": "Reggie",
+                "owes": "Reggie",
                 "Jan": 45.0,
                 "Sophie": 45.0,
                 "Reggie": 0.0                
@@ -106,7 +106,7 @@ class TestReadStatement:
             "cheaper_statement.csv",
             "Sophie Jane Sven",
             {
-                "person_owed": "Jan",
+                "owes": "Jan",
                 "Sophie": 30.0,
                 "Jane": 30.0,
                 "Sven": 30.0,
@@ -119,7 +119,7 @@ class TestReadStatement:
             "expensive_statement.csv",
             "Sophie Lou Nai",
             {
-                "person_owed": "Sophie",
+                "owes": "Sophie",
                 "Sophie": 0.0,
                 "Lou": 136.67,
                 "Nai": 136.67
@@ -148,7 +148,7 @@ class TestReadThenMerge:
             "totals.csv",
             [
                 {
-                    "person_owed": "Denise",
+                    "owes": "Denise",
                     "Jan": 90.0,
                     "Denise": 0.0
                 }
@@ -162,12 +162,12 @@ class TestReadThenMerge:
             "../prefilled_totals.csv",
             [
                 {
-                    "person_owed": "Sophie",
+                    "owes": "Sophie",
                     "Jan": 190.0,
                     "Sophie": 0.0
                 },
                 {
-                    "person_owed": "Jan",
+                    "owes": "Jan",
                     "Jan": 0.0,
                     "Sophie":10.0
                 }
@@ -181,7 +181,7 @@ class TestReadThenMerge:
             "../prefilled_totals.csv",
             [
                 {
-                    "person_owed": "Sophie",
+                    "owes": "Sophie",
                     "Jan": 100.0,
                     "Sophie": 0.0,
                     "Petr": 0.0,
@@ -189,7 +189,7 @@ class TestReadThenMerge:
                     "Martin": 0.0
                 },
                 {
-                    "person_owed": "Jan",
+                    "owes": "Jan",
                     "Sophie": 10.0,
                     "Jan": 0.0,
                     "Petr": 0.0,
@@ -197,7 +197,7 @@ class TestReadThenMerge:
                     "Martin": 0.0
                 },
                 {
-                    "person_owed": "Martin",
+                    "owes": "Martin",
                     "Petr": 102.5,
                     "Daniela": 102.5,
                     "Jan": 102.5,
@@ -234,24 +234,24 @@ class TestWriteTotalsSpreadsheet:
             "../prefilled_totals.csv",
             [
                 {
-                    'person_owed': 'person_owed', 
+                    'owes': 'owes', 
                     'Jan': 'Jan', 
                     'Sophie': 'Sophie'
                 },
                 {
-                    "person_owed": "Sophie",
+                    "owes": "Sophie",
                     "Jan": "190.0",
                     "Sophie": "0.0"
                 },
                 {
-                    "person_owed": "Jan",
+                    "owes": "Jan",
                     "Jan": "0.0",
                     "Sophie":"10.0"
                 }
             ]
         ),
         # Can read a spreadsheet, 3 people split cost
-        # Can merge with empty totals spreadsheet
+        # Can merge with prefilled totals spreadsheet
         # Can write to totals statement
         (
             "Sophie",
@@ -260,21 +260,21 @@ class TestWriteTotalsSpreadsheet:
             "../prefilled_totals.csv",
             [
                 {
-                    'person_owed': 'person_owed', 
+                    'owes': 'owes', 
                     'Jan': 'Jan', 
                     'Sophie': 'Sophie',
                     'Finn': 'Finn',
                     'Lou': 'Lou'
                 },
                 {
-                    "person_owed": "Sophie",
+                    "owes": "Sophie",
                     "Jan": "130.0",
                     "Sophie": "0.0",
                     "Lou": "30.0",
                     "Finn": "30.0"
                 },
                 {
-                    "person_owed": "Jan",
+                    "owes": "Jan",
                     "Jan": "0.0",
                     "Sophie":"10.0",
                     "Finn":"0.0",
