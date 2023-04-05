@@ -36,7 +36,7 @@ def test_2_other_people_split_first_file_statement_owner_pays_for_second(monkeyp
         assert totals_sheet == expected
 
 
-def test_SO_and_4_friends_split_first_transaction_And_a_few_pay_for_last_statement(monkeypatch, directory, totals_spreadsheet):
+def test_SO_and_4_friends_split_first_transaction_and_a_few_pay_for_last_statement(monkeypatch, directory, totals_spreadsheet):
     '''
     The statement owner and 4 friends split each transaction in the first statement
     Different people pay for the transactions in the 2nd statement
@@ -78,7 +78,37 @@ def test_SO_and_4_friends_split_first_transaction_And_a_few_pay_for_last_stateme
     with open(directory + totals_spreadsheet, 'r') as t:
         t_s = csv.DictReader(t)
         totals_sheet = list(t_s)
-        assert len(totals_sheet) == len(expected)
-        assert totals_sheet[0] == expected[0]
-        assert totals_sheet[1] == expected[1]
+        assert totals_sheet == expected
+
+
+def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spreadsheet):
+    '''
+    The same statement owner for 2 separate statements
+    '''
+    mocked_input = iter([
+        'test_data', 'totals', 
+        'Jan',
+        'Jan Padme Reggie Sophie Lou', 'Jan Lou Sophie Padme Reggie', 'Padme Sophie Lou Jan Reggie',
+        'Jan',
+        'Albert John', 'Thomas Reggie', 'Reggie Padme'
+        ])
+    monkeypatch.setattr('builtins.input', lambda _:next(mocked_input))
+    expected = [
+        {
+        'Albert':'7.5',
+        'Jan': '0.0',
+        'John':'7.5',
+        'Lou':'82.0',
+        'Padme': '109.5', 
+        'Sophie':'82.0',
+        'Reggie': '119.5', 
+        'Thomas':'10.0',
+        'owes': 'Jan'
+        }
+    ]
+    main()
+
+    with open(directory + totals_spreadsheet, 'r') as t:
+        t_s = csv.DictReader(t)
+        totals_sheet = list(t_s)
         assert totals_sheet == expected
