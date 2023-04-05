@@ -1,5 +1,4 @@
 import pytest
-import unittest
 from unittest.mock import patch
 from jointSpendingCalculator import *
 import os
@@ -281,6 +280,40 @@ class TestWriteTotalsSpreadsheet:
                     "Lou": "0.0"
                 }
             ]
+        ),
+        # When statement owner pays for everything, 
+        # then names already in the totals spreadsheet get value 0.0
+        (
+            "Lou",
+            "Lou",
+            "cheaper_statement.csv",
+            "../prefilled_totals.csv",
+            [
+                {
+                    'owes': 'owes', 
+                    'Jan': 'Jan', 
+                    'Sophie': 'Sophie',
+                    'Lou': 'Lou'
+                },
+                {
+                    "owes": "Sophie",
+                    "Jan": "100.0",
+                    "Sophie": "0.0",
+                    "Lou": "0.0"
+                },
+                {
+                    "owes": "Jan",
+                    "Jan": "0.0",
+                    "Sophie":"10.0",
+                    "Lou": "0.0"
+                },
+                {
+                    "owes": "Lou",
+                    "Jan": "0.0",
+                    "Sophie": "0.0",
+                    "Lou": "0.0"
+                }
+            ]
         )
     ]
 
@@ -303,4 +336,38 @@ class TestWriteTotalsSpreadsheet:
             reader = csv.DictReader(t, fieldnames=header)
             newly_written_totals_sheet = list(reader)
             assert newly_written_totals_sheet == expected 
+    
+def test_e2e(monkeypatch, directory, totals_spreadsheet):
+    inputs = iter([
+        'test_data', 'totals', 
+        'jan',
+        'Padme Reggie', 'Padme Reggie', 'Padme Reggie',
+        'Reggie',
+        'Reggie', 'Reggie', 'Reggie'
+        ])
+    monkeypatch.setattr('builtins.input', lambda _:next(inputs))
+    expected = [
+        {
+        'Padme': '205.0', 
+        'Reggie': '205.0', 
+        'jan': '0.0', 
+        'owes': 'jan'
+        }, 
+        {
+        'Padme': '0.0', 
+        'Reggie': '0.0', 
+        'jan': '0.0', 
+        'owes': 'Reggie'
+        }
+    ]
+    main()
 
+    with open(directory + totals_spreadsheet, 'r') as t:
+        t_s = csv.DictReader(t)
+        header = t_s.fieldnames
+        totals_sheet = list(t_s)
+        assert len(totals_sheet) == 2
+        #assert totals_sheet == expected
+        
+
+    
