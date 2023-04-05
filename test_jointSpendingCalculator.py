@@ -367,7 +367,7 @@ def test_e2e(monkeypatch, directory, totals_spreadsheet):
         header = t_s.fieldnames
         totals_sheet = list(t_s)
         assert len(totals_sheet) == 2
-        #assert totals_sheet == expected
+        assert totals_sheet == expected
         
 
     

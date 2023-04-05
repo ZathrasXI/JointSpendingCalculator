@@ -108,9 +108,10 @@ def merge_owed_from_statement_with_totals(directory, names_from_statement, state
                     except ValueError:
                         row[person] += float(owed_from_current_statement[person])
 
+        
         if statement_owner not in people_already_owed:
-            for person in people_already_owed:
-                if person not in owed_from_current_statement:
+            for person in header:
+                if person not in owed_from_current_statement and person != 'owes':
                     owed_from_current_statement[person] = 0.0
             totals_spreadsheet.append(owed_from_current_statement)
             
