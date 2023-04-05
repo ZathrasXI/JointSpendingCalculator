@@ -1,40 +1,9 @@
 import pytest
+from fixtures import *
 from unittest.mock import patch
 from jointSpendingCalculator import *
 import os
 import csv
-
-
-@pytest.fixture
-def directory():
-    with patch('builtins.input', return_value='test_data'):
-        DIRECTORY = find_folder()
-    return DIRECTORY    
-
-@pytest.fixture
-def names():
-    with patch("builtins.input", return_value="Jan Sophie"):
-        NAMES = get_names()
-    return NAMES
-
-@pytest.fixture()
-def totals_spreadsheet(directory):
-    SPREADSHEET_NAME = "totals"
-    with patch("builtins.input", return_value=SPREADSHEET_NAME):
-        TOTALS_SPREADSHEET = create_totals_file(directory)
-    yield TOTALS_SPREADSHEET
-    os.remove(directory + TOTALS_SPREADSHEET)
-
-@pytest.fixture
-def statements(directory, totals_spreadsheet):
-    totals_spreadsheet_name = totals_spreadsheet
-    s = get_statements(directory, totals_spreadsheet_name)
-    return s
-
-@pytest.fixture
-def remove_totals_spreadsheet(directory, totals_spreadsheet):
-    filename = totals_spreadsheet
-    os.remove(directory + filename)
 
 
 class TestGetDetails:
@@ -337,37 +306,6 @@ class TestWriteTotalsSpreadsheet:
             newly_written_totals_sheet = list(reader)
             assert newly_written_totals_sheet == expected 
     
-def test_e2e(monkeypatch, directory, totals_spreadsheet):
-    inputs = iter([
-        'test_data', 'totals', 
-        'jan',
-        'Padme Reggie', 'Padme Reggie', 'Padme Reggie',
-        'Reggie',
-        'Reggie', 'Reggie', 'Reggie'
-        ])
-    monkeypatch.setattr('builtins.input', lambda _:next(inputs))
-    expected = [
-        {
-        'Padme': '205.0', 
-        'Reggie': '205.0', 
-        'jan': '0.0', 
-        'owes': 'jan'
-        }, 
-        {
-        'Padme': '0.0', 
-        'Reggie': '0.0', 
-        'jan': '0.0', 
-        'owes': 'Reggie'
-        }
-    ]
-    main()
-
-    with open(directory + totals_spreadsheet, 'r') as t:
-        t_s = csv.DictReader(t)
-        header = t_s.fieldnames
-        totals_sheet = list(t_s)
-        assert len(totals_sheet) == 2
-        assert totals_sheet == expected
         
 
     
