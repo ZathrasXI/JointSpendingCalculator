@@ -28,7 +28,3 @@ def statements(directory, totals_spreadsheet):
     s = get_statements(directory, totals_spreadsheet_name)
     return s
 
-@pytest.fixture
-def remove_totals_spreadsheet(directory, totals_spreadsheet):
-    filename = totals_spreadsheet
-    os.remove(directory + filename)
