@@ -50,9 +50,8 @@ def triage_transactions(statement, directory, statement_owner, totals_spreadshee
 
 
 def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed):
-    header.insert(0, "owes")
     with open(directory + totals_spreadsheet, "w") as t:
-        writer = csv.DictWriter(t,header)
+        writer = csv.DictWriter(t,fieldnames=header)
         writer.writeheader()
         for row in new_total_owed:
             writer.writerow(row)

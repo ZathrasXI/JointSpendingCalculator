@@ -1,8 +1,9 @@
 When a person receives a payment and they need to split that money with others
 Make all names lower case when inputted
-No null values in totals spreadsheet, 
-    if no one owes anything, then 0.0, 
-    no one can owe themself anything, they owe themselves 'X'
+
+Why does using mode 'x' when opening a file cause tests to fail?
+
+Separate branch for "production"?
 
 export to html and pdf 
 
