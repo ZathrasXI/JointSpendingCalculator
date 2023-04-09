@@ -9,8 +9,10 @@ def test_2_other_people_split_first_file_statement_owner_pays_for_second(monkeyp
     mocked_input = iter([
         'test_data', 'totals', 
         'Jan',
+        'Co-operative',
         'Padme Reggie', 'Padme Reggie', 'Padme Reggie',
         'Reggie',
+        'Co-operative',
         'Reggie', 'Reggie', 'Reggie'
         ])
     monkeypatch.setattr('builtins.input', lambda _:next(mocked_input))
@@ -44,8 +46,10 @@ def test_SO_and_4_friends_split_first_transaction_and_a_few_pay_for_last_stateme
     mocked_input = iter([
         'test_data', 'totals', 
         'Jan',
+        'Co-operative',
         'Jan Padme Reggie Sophie Lou', 'Jan Lou Sophie Padme Reggie', 'Padme Sophie Lou Jan Reggie',
         'Reggie',
+        'Co-operative',
         'Albert John', 'Thomas Reggie', 'Reggie Padme'
         ])
     monkeypatch.setattr('builtins.input', lambda _:next(mocked_input))
@@ -88,8 +92,10 @@ def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spread
     mocked_input = iter([
         'test_data', 'totals', 
         'Jan',
+        'Co-operative',
         'Jan Padme Reggie Sophie Lou', 'Jan Lou Sophie Padme Reggie', 'Padme Sophie Lou Jan Reggie',
         'Jan',
+        'Co-operative',
         'Albert John', 'Thomas Reggie', 'Reggie Padme'
         ])
     monkeypatch.setattr('builtins.input', lambda _:next(mocked_input))

@@ -32,12 +32,13 @@ class TestGetDetails:
             spreadsheet = create_totals_file(directory)
         assert os.path.isfile(directory + spreadsheet) is True
 
-
     def test_whose_statement_is_this(self, statements):
-        with patch("builtins.input", return_value="Sophie"):
-            person = whose_statement(statements)
+        input_list = ['Sophie', 'Monzo']
+        inputs = iter(input_list)
+        with patch("builtins.input", side_effect=inputs):
+            person, outgoings_column_name = whose_statement_and_which_bank(statements)
         assert person == "Sophie"
-        assert person != "Tom"
+        assert outgoings_column_name == 'Amount'
     
 
 class TestReadStatement:
@@ -97,8 +98,9 @@ class TestReadStatement:
 
     @pytest.mark.parametrize("statement_owner,statement,return_value,expected", test_cases)
     def test_read_statement(self, statement_owner, statement, return_value, expected, directory):
+        outgoings_column_name = ' Money Out'
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, directory)
         
         people = return_value.split(' ')
         assert expected == owed_from_statement
@@ -179,13 +181,13 @@ class TestReadThenMerge:
     @pytest.mark.parametrize("statement_owner,statement,return_value,totals_statement,expected", test_cases)
     def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, totals_statement, totals_spreadsheet):
         dir = directory
+        outgoings_column_name = ' Money Out'
         if totals_statement == "totals.csv":
             totals = totals_spreadsheet
         else:
             totals = totals_statement
-
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, dir)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, dir)
         updated_totals, _ = merge_owed_from_statement_with_totals(dir, everyone_who_owes_from_this_statement, statement_owner, totals, owed_from_statement)
         assert expected == updated_totals
 
@@ -290,13 +292,14 @@ class TestWriteTotalsSpreadsheet:
     @pytest.mark.parametrize("statement_owner,return_value,statement,totals_statement,expected", test_cases)
     def test_can_write_to_totals_spreadsheet(self, statement_owner, return_value, statement, totals_statement, expected, totals_spreadsheet, directory):
         totals_sheet = totals_spreadsheet
+        outgoings_column_name = ' Money Out'
         if totals_statement == '../prefilled_totals.csv':
             totals = totals_statement
         else:
             totals = totals_statement
 
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, statement_owner, directory)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, directory)
 
         updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,statement_owner, totals, owed_from_statement)        
         write_to_totals_spreadsheet(directory, header, totals_sheet, updated_totals)

@@ -5,7 +5,15 @@ Why does using mode 'x' when opening a file cause tests to fail?
 
 Separate branch for "production"?
 
-export to html and pdf 
+
+# TODO Can skip a transaction
+
+# TODO it works with csvs from different banks
+
+# TODO final output as table
+
+# TODO at the end print the path to the totals spreadsheet
+
 
 What I've learned:
 - how to use PyTest

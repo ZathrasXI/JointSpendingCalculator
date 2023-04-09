@@ -38,26 +38,35 @@ def create_totals_file(folder):
     return filename
 
 
-def whose_statement(statement):
+def whose_statement_and_which_bank(statement):
     name = input(f"Who does this statement belong to: '{statement}'? ")
-    return name
+    banks = {
+        "Co-operative": " Money Out",
+        "Monzo": "Amount"
+    }
+    print("Which bank is the statement from?")
+    for bank in banks:
+        print(f" - {bank}")
+    bank_name = input("")
+    return name, banks[bank_name]
 
+def convert_all_values_to_floats(totals_spreadsheet):
+    for row in totals_spreadsheet:
+        for person in row:
+            if person != "owes":
+                try:
+                    row[person] = float(row[person])
+                except ValueError:
+                    row[person] = 0.0
+    return totals_spreadsheet
 
-def triage_transactions(statement, directory, statement_owner, totals_spreadsheet):
-    owed_from_statement, names = read_statement(statement, statement_owner, directory)
+def triage_transactions(statement, outgoings_column_name, directory, statement_owner, totals_spreadsheet):
+    owed_from_statement, names = read_statement(statement, outgoings_column_name, statement_owner, directory)
     new_total_owed, header = merge_owed_from_statement_with_totals(directory, names, statement_owner, totals_spreadsheet, owed_from_statement)
     write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed)
 
 
-def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed):
-    with open(directory + totals_spreadsheet, "w") as t:
-        writer = csv.DictWriter(t,fieldnames=header)
-        writer.writeheader()
-        for row in new_total_owed:
-            writer.writerow(row)
-    
-
-def read_statement(statement, statement_owner, directory):
+def read_statement(statement, outgoings_column_name, statement_owner, directory):
     everyone_from_statement = [statement_owner]
     with open(directory + statement, "r") as persons_statement:
         statement_reader = csv.DictReader(persons_statement)
@@ -65,7 +74,7 @@ def read_statement(statement, statement_owner, directory):
         owes_from_statement = {"owes": statement_owner, statement_owner: 0.0}
         for transaction in statement_reader:
             try:
-                cost = float(transaction[" Money Out"])
+                cost = float(transaction[outgoings_column_name])
             except TypeError and ValueError:
                 continue
             print(f"\n{transaction}\n")
@@ -118,15 +127,12 @@ def merge_owed_from_statement_with_totals(directory, names_from_statement, state
         return totals_spreadsheet, header
 
 
-def convert_all_values_to_floats(totals_spreadsheet):
-    for row in totals_spreadsheet:
-        for person in row:
-            if person != "owes":
-                try:
-                    row[person] = float(row[person])
-                except ValueError:
-                    row[person] = 0.0
-    return totals_spreadsheet
+def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total_owed):
+    with open(directory + totals_spreadsheet, "w") as t:
+        writer = csv.DictWriter(t,fieldnames=header)
+        writer.writeheader()
+        for row in new_total_owed:
+            writer.writerow(row)
 
 
 def main():
@@ -135,8 +141,8 @@ def main():
     statements = get_statements(folder, new_totals_spreadsheet)
     for statement in statements:
         if statement != new_totals_spreadsheet:
-            person = whose_statement(statement)
-            triage_transactions(statement, folder, person, new_totals_spreadsheet)
+            person, outgoings_column_name = whose_statement_and_which_bank(statement)
+            triage_transactions(statement, outgoings_column_name, folder, person, new_totals_spreadsheet)
     
 if __name__ == "__main__":
     main()
