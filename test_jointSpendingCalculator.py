@@ -318,6 +318,36 @@ class TestWriteTotalsSpreadsheet:
             newly_written_totals_sheet = list(reader)
             assert newly_written_totals_sheet == expected 
     
-        
 
+def test_create_totals_html_file():
+    csv_file = 'prefilled_totals.csv'
+    directory = './'
+    html_file = create_table_in_html_file(directory, csv_file)
+    html_tables = pandas.read_html(html_file)
+    html_tables[0].to_csv('test_html2csv.csv')
+
+    html_2_csv = []
+    with open('test_html2csv.csv', 'r') as h:
+        header = ['','Unnamed: 0','owes','Jan','Sophie']
+        
+        csv_reader = csv.DictReader(h, header)
+        html_2_csv = list(csv_reader)
+    for row in html_2_csv:
+        row.pop('')
+        row.pop('Unnamed: 0')
     
+    prefilled_totals = []
+    with open('prefilled_totals.csv', 'r') as p:
+        fieldnames = ['owes', 'Jan', 'Sophie']
+        csv_reader = csv.DictReader(p, fieldnames)
+        prefilled_totals = list(csv_reader)
+
+
+    assert prefilled_totals[1] in html_2_csv
+    assert html_file == 'prefilled_totals.html'
+    assert os.path.isfile(html_file)
+    os.remove(html_file)
+    os.remove('test_html2csv.csv')
+
+
+

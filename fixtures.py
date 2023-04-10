@@ -28,3 +28,8 @@ def statements(directory, totals_spreadsheet):
     s = get_statements(directory, totals_spreadsheet_name)
     return s
 
+@pytest.fixture
+def delete_html_file(directory, totals_spreadsheet):
+    yield
+    html_file = totals_spreadsheet[:-4] + '.html'
+    os.remove(directory + html_file)

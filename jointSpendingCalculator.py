@@ -1,5 +1,6 @@
 import os
 import csv
+import pandas
 
 def add_trailing_slash_if_needed(directory_name):
     folder = directory_name
@@ -138,6 +139,12 @@ def write_to_totals_spreadsheet(directory, header, totals_spreadsheet, new_total
         for row in new_total_owed:
             writer.writerow(row)
 
+def create_table_in_html_file(folder, new_totals_spreadsheet):
+    totals_csv = pandas.read_csv(folder + new_totals_spreadsheet)
+    name_of_html = new_totals_spreadsheet[:-3] + 'html'
+    totals_csv.to_html(folder + name_of_html)
+    return name_of_html
+
 
 def main():
     folder = find_folder()
@@ -148,5 +155,8 @@ def main():
             person, outgoings_column_name = whose_statement_and_which_bank(statement)
             triage_transactions(statement, outgoings_column_name, folder, person, new_totals_spreadsheet)
     
+    html_file = create_table_in_html_file(folder, new_totals_spreadsheet)
+    print(f'You can view a table of who owes whom what, by opening {folder}{html_file} in a web browser.')
+
 if __name__ == "__main__":
     main()

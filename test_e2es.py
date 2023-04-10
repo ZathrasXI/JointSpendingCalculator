@@ -1,7 +1,7 @@
 from fixtures import *
 from jointSpendingCalculator import *
 
-def test_2_other_people_split_first_file_statement_owner_pays_for_second(monkeypatch, directory, totals_spreadsheet):
+def test_2_other_people_split_first_file_statement_owner_pays_for_second(monkeypatch, directory, totals_spreadsheet, delete_html_file):
     '''
     Two friends of the statement owner split the cost of all of the transactions in the first statement
     The statement owner of the 2nd statement pays for all of their transactions 
@@ -38,7 +38,7 @@ def test_2_other_people_split_first_file_statement_owner_pays_for_second(monkeyp
         assert totals_sheet == expected
 
 
-def test_SO_and_4_friends_split_first_transaction_and_a_few_pay_for_last_statement(monkeypatch, directory, totals_spreadsheet):
+def test_SO_and_4_friends_split_first_transaction_and_a_few_pay_for_last_statement(monkeypatch, directory, totals_spreadsheet, delete_html_file):
     '''
     The statement owner and 4 friends split each transaction in the first statement
     Different people pay for the transactions in the 2nd statement
@@ -85,7 +85,7 @@ def test_SO_and_4_friends_split_first_transaction_and_a_few_pay_for_last_stateme
         assert totals_sheet == expected
 
 
-def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spreadsheet):
+def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spreadsheet, delete_html_file):
     '''
     The same statement owner for 2 separate statements
     '''
@@ -119,7 +119,7 @@ def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spread
         totals_sheet = list(t_s)
         assert totals_sheet == expected
 
-def test_skip_one_transaction(monkeypatch, directory, totals_spreadsheet):
+def test_skip_one_transaction(monkeypatch, directory, totals_spreadsheet, delete_html_file):
     '''
     The same statement owner for 2 separate statements
     '''
