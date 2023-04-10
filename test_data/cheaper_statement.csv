@@ -1,4 +1,4 @@
-Date,Description,Type,Money In, Money Out, Balance
+Date,Description,Type,Money In,Amount, Balance
 2022-12-22,Padme          Fuel,CREDIT,5.00,,105
 2022-12-23,Reggie Sprouts,BP/SO,,15,85
 2022-12-24,Jan         Pizza,BP/SO,,20,65.00

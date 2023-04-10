@@ -48,6 +48,7 @@ class TestReadStatement:
         ( 
             "Padme",
             "cheaper_statement.csv",
+            "Amount",
             "Jan", 
             {
                 "owes":"Padme",
@@ -59,7 +60,8 @@ class TestReadStatement:
         # Read Reggie's statement - Jan and Sophie split everything
         ( 
             "Reggie", 
-            "cheaper_statement.csv", 
+            "cheaper_statement.csv",
+            "Amount", 
             "Jan Sophie", 
             {
                 "owes": "Reggie",
@@ -73,6 +75,7 @@ class TestReadStatement:
         ( 
             "Jan",
             "cheaper_statement.csv",
+            "Amount",
             "Sophie Jane Sven",
             {
                 "owes": "Jan",
@@ -86,6 +89,7 @@ class TestReadStatement:
         (
             "Sophie",
             "expensive_statement.csv",
+            " Money Out",
             "Sophie Lou Nai",
             {
                 "owes": "Sophie",
@@ -96,11 +100,10 @@ class TestReadStatement:
         )
     ]
 
-    @pytest.mark.parametrize("statement_owner,statement,return_value,expected", test_cases)
-    def test_read_statement(self, statement_owner, statement, return_value, expected, directory):
-        outgoings_column_name = ' Money Out'
+    @pytest.mark.parametrize("statement_owner,statement,outgoings_column,return_value,expected", test_cases)
+    def test_read_statement(self, statement_owner, statement, outgoings_column, return_value, expected, directory):
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, directory)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column, statement_owner, directory)
         
         people = return_value.split(' ')
         assert expected == owed_from_statement
@@ -114,6 +117,7 @@ class TestReadThenMerge:
         ( 
             "Denise",
             "cheaper_statement.csv",
+            "Amount",
             "Jan",
             "totals.csv",
             [
@@ -128,6 +132,7 @@ class TestReadThenMerge:
         (
             "Sophie",
             "cheaper_statement.csv",
+            "Amount",
             "Jan",
             "../prefilled_totals.csv",
             [
@@ -147,6 +152,7 @@ class TestReadThenMerge:
         ( 
             "Martin",
             "expensive_statement.csv",
+            " Money Out",
             "Petr Daniela Sophie Jan",
             "../prefilled_totals.csv",
             [
@@ -178,17 +184,12 @@ class TestReadThenMerge:
         )
     ]
 
-    @pytest.mark.parametrize("statement_owner,statement,return_value,totals_statement,expected", test_cases)
-    def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, return_value, expected, directory, totals_statement, totals_spreadsheet):
+    @pytest.mark.parametrize("statement_owner,statement,outgoings_column,return_value,totals_statement,expected", test_cases)
+    def test_can_merge_money_owed_with_values_in_totals_spreadsheet(self, statement_owner, statement, outgoings_column,return_value, expected, directory, totals_statement, totals_spreadsheet):
         dir = directory
-        outgoings_column_name = ' Money Out'
-        if totals_statement == "totals.csv":
-            totals = totals_spreadsheet
-        else:
-            totals = totals_statement
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, dir)
-        updated_totals, _ = merge_owed_from_statement_with_totals(dir, everyone_who_owes_from_this_statement, statement_owner, totals, owed_from_statement)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column, statement_owner, dir)
+        updated_totals, _ = merge_owed_from_statement_with_totals(dir, everyone_who_owes_from_this_statement, statement_owner, totals_statement, owed_from_statement)
         assert expected == updated_totals
 
 
@@ -199,8 +200,9 @@ class TestWriteTotalsSpreadsheet:
         # Can re-write spreadsheet with updated values
         (
             "Sophie",
-            "Jan",
             "cheaper_statement.csv",
+            "Amount",
+            "Jan",
             "../prefilled_totals.csv",
             [
                 {
@@ -225,8 +227,9 @@ class TestWriteTotalsSpreadsheet:
         # Can write to totals statement
         (
             "Sophie",
-            "Jan Finn Lou",
             "cheaper_statement.csv",
+            "Amount",
+            "Jan Finn Lou",
             "../prefilled_totals.csv",
             [
                 {
@@ -256,8 +259,9 @@ class TestWriteTotalsSpreadsheet:
         # then names already in the totals spreadsheet get value 0.0
         (
             "Lou",
-            "Lou",
             "cheaper_statement.csv",
+            "Amount",
+            "Lou",
             "../prefilled_totals.csv",
             [
                 {
@@ -289,19 +293,14 @@ class TestWriteTotalsSpreadsheet:
     ]
 
 
-    @pytest.mark.parametrize("statement_owner,return_value,statement,totals_statement,expected", test_cases)
-    def test_can_write_to_totals_spreadsheet(self, statement_owner, return_value, statement, totals_statement, expected, totals_spreadsheet, directory):
+    @pytest.mark.parametrize("statement_owner,statement,outgoings_column,return_value,totals_statement,expected", test_cases)
+    def test_can_write_to_totals_spreadsheet(self, statement_owner, statement, outgoings_column, return_value, totals_statement, expected, totals_spreadsheet, directory):
         totals_sheet = totals_spreadsheet
-        outgoings_column_name = ' Money Out'
-        if totals_statement == '../prefilled_totals.csv':
-            totals = totals_statement
-        else:
-            totals = totals_statement
 
         with patch("builtins.input", return_value=return_value):
-            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column_name, statement_owner, directory)
+            owed_from_statement, everyone_who_owes_from_this_statement = read_statement(statement, outgoings_column, statement_owner, directory)
 
-        updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,statement_owner, totals, owed_from_statement)        
+        updated_totals, header = merge_owed_from_statement_with_totals(directory, everyone_who_owes_from_this_statement,statement_owner, totals_statement, owed_from_statement)        
         write_to_totals_spreadsheet(directory, header, totals_sheet, updated_totals)
 
         with open(directory + totals_sheet, "r") as t:
