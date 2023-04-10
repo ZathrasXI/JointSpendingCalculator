@@ -342,7 +342,6 @@ def test_create_totals_html_file():
         csv_reader = csv.DictReader(p, fieldnames)
         prefilled_totals = list(csv_reader)
 
-
     assert prefilled_totals[1] in html_2_csv
     assert html_file == 'prefilled_totals.html'
     assert os.path.isfile(html_file)

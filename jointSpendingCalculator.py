@@ -85,7 +85,7 @@ def read_statement(statement, outgoings_column_name, statement_owner, directory)
             if ask_for_names_of_people.strip() == '*SKIP*':
                 continue 
             list_of_names_unformatted = ask_for_names_of_people.split(" ")
-            people_who_owe = [person for person in list_of_names_unformatted if person != ""]
+            people_who_owe = [person.capitalize() for person in list_of_names_unformatted if person != ""]
             how_much_each_person_owes = round(cost / len(people_who_owe), 2)
 
             for person in people_who_owe:
