@@ -68,9 +68,11 @@ def triage_transactions(statement, outgoings_column_name, directory, statement_o
 
 def read_statement(statement, outgoings_column_name, statement_owner, directory):
     everyone_from_statement = [statement_owner]
+
     with open(directory + statement, "r") as persons_statement:
         statement_reader = csv.DictReader(persons_statement)
-        print(f"For each transaction in {statement} enter the name of everyone who should pay for this item. Remember to include yourself...") # ..."by typing me." ?
+        print(f"For each transaction in {statement} enter the name of everyone who should pay for this item. Remember to include your name.") 
+        print("TYPE '*SKIP*' to skip a transaction.")
         owes_from_statement = {"owes": statement_owner, statement_owner: 0.0}
         for transaction in statement_reader:
             try:
@@ -79,6 +81,8 @@ def read_statement(statement, outgoings_column_name, statement_owner, directory)
                 continue
             print(f"\n{transaction}\n")
             ask_for_names_of_people = input("Including yourself, list the people who should pay for this transaction: ")
+            if ask_for_names_of_people.strip() == '*SKIP*':
+                continue 
             list_of_names_unformatted = ask_for_names_of_people.split(" ")
             people_who_owe = [person for person in list_of_names_unformatted if person != ""]
             how_much_each_person_owes = round(cost / len(people_who_owe), 2)

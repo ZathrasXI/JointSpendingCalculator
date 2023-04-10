@@ -118,3 +118,36 @@ def test_2_statements_from_the_same_person(monkeypatch, directory, totals_spread
         t_s = csv.DictReader(t)
         totals_sheet = list(t_s)
         assert totals_sheet == expected
+
+def test_skip_one_transaction(monkeypatch, directory, totals_spreadsheet):
+    '''
+    The same statement owner for 2 separate statements
+    '''
+    mocked_input = iter([
+        'test_data', 'totals', 
+        'Jan',
+        'Co-operative',
+        'Jan Padme Reggie Sophie Lou', '*SKIP*', 'Padme Sophie Lou Jan Reggie',
+        'Jan',
+        'Monzo',
+        'Albert John', '*SKIP*', 'Reggie Padme'
+        ])
+    monkeypatch.setattr('builtins.input', lambda _:next(mocked_input))
+    expected = [
+        {
+        'Albert':'7.5',
+        'Jan': '0.0',
+        'John':'7.5',
+        'Lou':'12.0',
+        'Padme': '39.5', 
+        'Sophie':'12.0',
+        'Reggie': '39.5', 
+        'owes': 'Jan'
+        }
+    ]
+    main()
+
+    with open(directory + totals_spreadsheet, 'r') as t:
+        t_s = csv.DictReader(t)
+        totals_sheet = list(t_s)
+        assert totals_sheet == expected

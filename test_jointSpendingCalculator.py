@@ -97,6 +97,16 @@ class TestReadStatement:
                 "Lou": 136.67,
                 "Nai": 136.67
             }
+        ),
+        (
+            "Sophie",
+            "expensive_statement.csv",
+            " Money Out",
+            "*SKIP*",
+            {
+                "owes": "Sophie",
+                "Sophie": 0.0
+            }
         )
     ]
 
