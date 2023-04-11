@@ -2,10 +2,6 @@ Why does using mode 'x' when opening a file cause tests to fail?
 
 Separate branch for "production"?
 
-# TODO make all names start with Upper case
-
-# TODO handle when person enters wrong bank name
-
 # TODO handle when person enters the name of a folder that doesn't exist
 
 

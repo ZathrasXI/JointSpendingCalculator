@@ -49,7 +49,9 @@ def whose_statement_and_which_bank(statement):
     for bank in banks:
         print(f" - {bank}")
     bank_name = input("")
-    return name, banks[bank_name]
+    while bank_name.strip().capitalize() not in banks:
+        bank_name = input('Bank not found. Please try again: ')
+    return name, banks[bank_name.strip().capitalize()]
 
 def convert_all_values_to_floats(totals_spreadsheet):
     for row in totals_spreadsheet:

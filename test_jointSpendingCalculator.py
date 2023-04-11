@@ -32,13 +32,43 @@ class TestGetDetails:
             spreadsheet = create_totals_file(directory)
         assert os.path.isfile(directory + spreadsheet) is True
 
-    def test_whose_statement_is_this(self, statements):
-        input_list = ['Sophie', 'Monzo']
-        inputs = iter(input_list)
-        with patch("builtins.input", side_effect=inputs):
+    test_cases_bank_name = [
+        (
+            ['Jan','abc', '123', '1','2','3',' co-operative'],
+            {
+                'person':'Jan',
+                'outgoings_column': ' Money Out'
+            }
+        )
+        ,(
+            ['Sophie', 'elephants', 'tomatoes', ' monzo'],
+            {
+                'person':'Sophie',
+                'outgoings_column': 'Amount'
+            }
+        ),
+        (
+          ['Julius', 'Co-operative'],
+            {
+                'person':'Julius',
+                'outgoings_column': ' Money Out'
+            }
+        ),
+        (
+          ['Julius', 'Monzo'],
+            {
+                'person':'Julius',
+                'outgoings_column': 'Amount'
+            }
+        )
+    ]
+    @pytest.mark.parametrize('name_and_bank_names,expected', test_cases_bank_name)
+    def test_whose_statement_which_bank(self, statements, name_and_bank_names, expected):
+        a = iter(name_and_bank_names)
+        with patch("builtins.input", side_effect=name_and_bank_names):
             person, outgoings_column_name = whose_statement_and_which_bank(statements)
-        assert person == "Sophie"
-        assert outgoings_column_name == 'Amount'
+        assert person == expected['person']
+        assert outgoings_column_name == expected['outgoings_column']
     
 
 class TestReadStatement:
