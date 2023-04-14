@@ -11,7 +11,8 @@ def add_trailing_slash_if_needed(directory_name):
 
 def get_names():
     names_input = input('Enter your names seperated by a space. ')
-    names = names_input.split(' ')
+    names_raw = names_input.split(' ')
+    names = [ name.strip().capitalize() for name in names_raw if name != '']
     return names
 
 def find_folder():

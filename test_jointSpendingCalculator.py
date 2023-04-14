@@ -8,6 +8,14 @@ import csv
 
 class TestGetDetails:
 
+    def test_get_names(self):
+        list_of_names = [' John ', ' john ', 'john', 'John']
+        with patch('builtins.input', side_effect=list_of_names):
+            names = get_names()
+        for name in names:
+            assert name[0].isupper() == True
+            assert name[-1].isalpha() == True
+
     def test_which_folder_are_the_statements_in(self, directory):
         assert os.path.isdir(directory) is True
         assert directory[-1] == '/'
