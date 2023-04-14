@@ -19,8 +19,8 @@ class TestGetDetails:
 
 
     def test_folder_contains_correct_statements(self, statements):
-        statement_1 = 'expensive_statement.csv'
-        statement_2 = 'cheaper_statement.csv'
+        statement_1 = 'coop_statement.csv'
+        statement_2 = 'monzo_statement.csv'
         statement_3 = 'jans_coop_bank_statement.csv'
         assert statement_1 in statements
         assert statement_2 in statements
@@ -64,7 +64,6 @@ class TestGetDetails:
     ]
     @pytest.mark.parametrize('name_and_bank_names,expected', test_cases_bank_name)
     def test_whose_statement_which_bank(self, statements, name_and_bank_names, expected):
-        a = iter(name_and_bank_names)
         with patch("builtins.input", side_effect=name_and_bank_names):
             person, outgoings_column_name = whose_statement_and_which_bank(statements)
         assert person == expected['person']
@@ -77,7 +76,7 @@ class TestReadStatement:
         # Read Padme's statement - Jan pays for everything
         ( 
             "Padme",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Jan", 
             {
@@ -90,7 +89,7 @@ class TestReadStatement:
         # Read Reggie's statement - Jan and Sophie split everything
         ( 
             "Reggie", 
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount", 
             "Jan Sophie", 
             {
@@ -104,7 +103,7 @@ class TestReadStatement:
         # Read Jan's statement - Sophie, Jane, Sven split everything between them
         ( 
             "Jan",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Sophie Jane Sven",
             {
@@ -118,7 +117,7 @@ class TestReadStatement:
         # Read Sophie's statement - Sophie and Lou split everything between them
         (
             "Sophie",
-            "expensive_statement.csv",
+            "coop_statement.csv",
             " Money Out",
             "Sophie Lou Nai",
             {
@@ -130,7 +129,7 @@ class TestReadStatement:
         ),
         (
             "Sophie",
-            "expensive_statement.csv",
+            "coop_statement.csv",
             " Money Out",
             "*SKIP*",
             {
@@ -156,7 +155,7 @@ class TestReadThenMerge:
         # Can add values to an empty totals spreadsheet
         ( 
             "Denise",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Jan",
             "totals.csv",
@@ -171,7 +170,7 @@ class TestReadThenMerge:
         # Can update values  names already in the totals spreadsheet
         (
             "Sophie",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Jan",
             "../prefilled_totals.csv",
@@ -191,7 +190,7 @@ class TestReadThenMerge:
         # Can add new statement owner to the totals spreadsheet
         ( 
             "Martin",
-            "expensive_statement.csv",
+            "coop_statement.csv",
             " Money Out",
             "Petr Daniela Sophie Jan",
             "../prefilled_totals.csv",
@@ -240,7 +239,7 @@ class TestWriteTotalsSpreadsheet:
         # Can re-write spreadsheet with updated values
         (
             "Sophie",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Jan",
             "../prefilled_totals.csv",
@@ -267,7 +266,7 @@ class TestWriteTotalsSpreadsheet:
         # Can write to totals statement
         (
             "Sophie",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Jan Finn Lou",
             "../prefilled_totals.csv",
@@ -299,7 +298,7 @@ class TestWriteTotalsSpreadsheet:
         # then names already in the totals spreadsheet get value 0.0
         (
             "Lou",
-            "cheaper_statement.csv",
+            "monzo_statement.csv",
             "Amount",
             "Lou",
             "../prefilled_totals.csv",

@@ -2,10 +2,6 @@ Why does using mode 'x' when opening a file cause tests to fail?
 
 # TODO handle when person enters the name of a folder that doesn't exist
 
-# TODO remove iter(['list','list'])
-
-# TODO rename cheaper_statement to monzo_statement, and expensive_statement to coop_statement
-
 What I've learned:
 - how to use PyTest
 - how to do Table Driven Testing with PyTest

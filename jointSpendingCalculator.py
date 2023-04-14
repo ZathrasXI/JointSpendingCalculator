@@ -25,7 +25,7 @@ def find_folder():
 def get_statements(folder, totals_spreadsheet):
     statements = os.listdir(folder)
     statements.remove(totals_spreadsheet)
-    statements.sort(reverse=True)
+    statements.sort()
     return statements
 
 def create_totals_file(folder):
