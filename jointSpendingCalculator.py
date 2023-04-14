@@ -1,6 +1,7 @@
 import os
 import csv
 import pandas
+import re
 
 def add_trailing_slash_if_needed(directory_name):
     folder = directory_name
@@ -80,6 +81,8 @@ def read_statement(statement, outgoings_column_name, statement_owner, directory)
         for transaction in statement_reader:
             try:
                 cost = float(transaction[outgoings_column_name])
+                price = re.search("[0-9.]+", transaction[outgoings_column_name])
+                cost = float(price.group())
             except TypeError and ValueError:
                 continue
             print(f"\n{transaction}\n")
