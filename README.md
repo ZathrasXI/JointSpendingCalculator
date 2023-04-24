@@ -1,6 +1,6 @@
 # JointSpendingCalclutor
 
-To help with working out who owes whom what. Put bank statements formatted as .csv. in a directory, and for each transaction in each statement the script will ask for
+To help with working out who owes whom what. Put bank statements formatted as .csv in a directory, and for each transaction in each statement the script will ask for
 the name of the people who owe money. At the end, an HTML table is created displaying, who owes whom what.
 
 Use `pytest` to run the tests.
@@ -13,9 +13,10 @@ Use `pytest` to run the tests.
 - Trying pipeline testing using GitHub Actions
 
 ## To setup:
-1. Create a virtual environment, e.g. `python3 -m venv venv/`
-2. Activate the virtual environment, `source venv/bin/activate`
-3. Install packages `pip install -r requirements.txt`
+1. Pull the repo
+2. Create a virtual environment, e.g. `python3 -m venv venv/`
+3. Activate the virtual environment, `source venv/bin/activate`
+4. Install packages `pip install -r requirements.txt`
 
 ## Usage:
 1. Create a sub-directory and put statements formatted as .csv files in it
