@@ -13,7 +13,7 @@ Use `pytest` to run the tests.
 - Trying pipeline testing using GitHub Actions
 
 ## To setup:
-1. Pull the repo
+1. Clone the repo
 2. Create a virtual environment, e.g. `python3 -m venv venv/`
 3. Activate the virtual environment, `source venv/bin/activate`
 4. Install packages `pip install -r requirements.txt`
